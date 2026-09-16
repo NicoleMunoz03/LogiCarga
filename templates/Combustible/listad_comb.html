@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+
+{% block title %}LogiCarga - Registro de Combustible{% endblock %}
+
+{% block header_title %}Registro de Combustible{% endblock %}
+{% block header_subtitle %}Control de cargas de combustible, costos de abastecimiento y telemetría por viaje{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+  <!-- Page Header & Action Bar -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div>
+      <h2 class="font-headline-md text-headline-md font-bold text-primary tracking-tight">Historial de Cargas</h2>
+      <p class="font-body-md text-body-md text-on-surface-variant mt-0.5">Control y telemetría de cargas de combustible realizadas durante los viajes</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <!-- Export Button -->
+      <button id="btn-export-csv" class="inline-flex items-center gap-2 px-4 h-10 rounded-lg bg-surface-container-lowest border border-outline-variant hover:border-secondary text-primary font-label-md text-label-md shadow-xs transition-colors cursor-pointer" type="button">
+        <span class="material-symbols-outlined text-[18px]">download</span>
+        <span>Exportar CSV</span>
+      </button>
+      <!-- + Registrar Carga -->
+      <a href="{% url 'combustible_crear' %}" class="inline-flex items-center gap-2 px-4 h-10 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md shadow-xs transition-colors">
+        <span class="material-symbols-outlined text-[18px]">add</span>
+        <span>+ Registrar Carga</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- OPERATIONAL KPIS & METRICS -->
+  <section aria-label="Métricas de combustible" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- Metric Card 1: Total Registros -->
+    <div class="bg-surface-container-lowest border border-outline-variant/40 rounded-xl p-5 shadow-xs hover:border-outline transition-all duration-150">
+      <div class="flex items-center justify-between mb-3">
+        <span class="font-label-md text-label-md text-on-surface-variant uppercase font-semibold text-[11px]">TOTAL REGISTROS</span>
+        <div class="w-8 h-8 rounded-lg bg-surface-container-low flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined text-[20px]">water_drop</span>
+        </div>
+      </div>
+      <div class="font-headline-xl text-headline-xl text-primary font-bold tracking-tight font-tabular-data">{{ total_cargas|default:cargas.count }} <span class="text-body-md font-normal text-on-surface-variant">cargas</span></div>
+      <div class="flex items-center gap-1.5 mt-2 font-label-sm text-label-sm">
+        <span class="text-secondary font-semibold flex items-center">
+          <span class="material-symbols-outlined text-[16px]">check_circle</span>
+          Registradas en sistema
+        </span>
+      </div>
+    </div>
+
+    <!-- Metric Card 2: Costo Total Combustible -->
+    <div class="bg-surface-container-lowest border border-outline-variant/40 rounded-xl p-5 shadow-xs hover:border-outline transition-all duration-150">
+      <div class="flex items-center justify-between mb-3">
+        <span class="font-label-md text-label-md text-on-surface-variant uppercase font-semibold text-[11px]">COSTO TOTAL</span>
+        <div class="w-8 h-8 rounded-lg bg-surface-container-low flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined text-[20px]">payments</span>
+        </div>
+      </div>
+      <div class="font-headline-xl text-headline-xl text-primary font-bold tracking-tight font-tabular-data">${{ total_costo|floatformat:0 }} <span class="text-body-sm font-normal text-on-surface-variant">COP</span></div>
+      <div class="flex items-center gap-1.5 mt-2 font-label-sm text-label-sm">
+        <span class="text-on-surface-variant font-medium flex items-center">
+          <span class="material-symbols-outlined text-[16px]">trending_up</span>
+          Trazabilidad de gasto
+        </span>
+      </div>
+    </div>
+
+    <!-- Metric Card 3: Total Litros -->
+    <div class="bg-surface-container-lowest border border-outline-variant/40 rounded-xl p-5 shadow-xs hover:border-outline transition-all duration-150">
+      <div class="flex items-center justify-between mb-3">
+        <span class="font-label-md text-label-md text-on-surface-variant uppercase font-semibold text-[11px]">TOTAL LITROS</span>
+        <div class="w-8 h-8 rounded-lg bg-surface-container-low flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined text-[20px]">speed</span>
+        </div>
+      </div>
+      <div class="font-headline-xl text-headline-xl text-primary font-bold tracking-tight font-tabular-data">{{ total_litros|floatformat:1 }} <span class="text-body-md font-normal text-on-surface-variant">Litros</span></div>
+      <div class="flex items-center gap-1.5 mt-2 font-label-sm text-label-sm">
+        <span class="text-secondary font-semibold flex items-center">
+          <span class="material-symbols-outlined text-[16px]">arrow_upward</span>
+          Promedio: {{ promedio_litros|floatformat:1 }} L/carga
+        </span>
+      </div>
+    </div>
+
+    <!-- Metric Card 4: Telemetría CAN-BUS -->
+    <div class="bg-surface-container-lowest border border-outline-variant/40 rounded-xl p-5 shadow-xs hover:border-outline transition-all duration-150">
+      <div class="flex items-center justify-between mb-3">
+        <span class="font-label-md text-label-md text-on-surface-variant uppercase font-semibold text-[11px]">TELEMETRÍA CAN-BUS</span>
+        <div class="w-8 h-8 rounded-lg bg-surface-container-low flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined text-[20px]">local_gas_station</span>
+        </div>
+      </div>
+      <div class="font-headline-xl text-headline-xl text-primary font-bold tracking-tight font-tabular-data">100%</div>
+      <div class="flex items-center gap-1.5 mt-2 font-label-sm text-label-sm">
+        <span class="w-2 h-2 rounded-full bg-secondary"></span>
+        <span class="text-on-surface font-medium">Verificadas en sistema</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Search on Left -->
+  <div class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/40 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
+    <div class="relative w-full md:w-96">
+      <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-outline">
+        <span class="material-symbols-outlined text-[20px]">search</span>
+      </span>
+      <input id="search-input" class="w-full pl-10 pr-4 py-2 h-10 bg-surface text-on-surface font-body-md text-body-md border border-outline-variant rounded-lg focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary placeholder-on-surface-variant/70 transition-colors" placeholder="Buscar por vehículo, conductor o ciudad..." type="text"/>
+    </div>
+  </div>
+
+  <!-- FUEL TRANSACTIONS TABLE -->
+  <section class="bg-surface-container-lowest border border-outline-variant/40 rounded-xl shadow-xs overflow-hidden">
+    <div class="overflow-x-auto">
+      <table id="combustible-table" class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-surface-bright border-b border-outline-variant/30 h-11">
+            <th class="px-5 py-3 font-label-md text-label-md text-on-surface-variant font-semibold uppercase tracking-wider text-[11px]" scope="col">ID</th>
+            <th class="px-5 py-3 font-label-md text-label-md text-on-surface-variant font-semibold uppercase tracking-wider text-[11px]" scope="col">Vehículo</th>
+            <th class="px-5 py-3 font-label-md text-label-md text-on-surface-variant font-semibold uppercase tracking-wider text-[11px]" scope="col">Conductor</th>
+            <th class="px-5 py-3 font-label-md text-label-md text-on-surface-variant font-semibold uppercase tracking-wider text-[11px]" scope="col">Litros cargados</th>
+            <th class="px-5 py-3 font-label-md text-label-md text-on-surface-variant font-semibold uppercase tracking-wider text-[11px]" scope="col">Costo total</th>
+            <th class="px-5 py-3 font-label-md text-label-md text-on-surface-variant font-semibold uppercase tracking-wider text-[11px]" scope="col">Ciudad</th>
+            <th class="px-5 py-3 font-label-md text-label-md text-on-surface-variant font-semibold uppercase tracking-wider text-[11px]" scope="col">Fecha</th>
+            <th class="px-5 py-3 font-label-md text-label-md text-on-surface-variant font-semibold uppercase tracking-wider text-[11px] text-right" scope="col">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-outline-variant/20 font-body-md text-body-md">
+          {% for carga in cargas %}
+          <tr class="hover:bg-surface-container-low/60 transition-colors duration-150 fuel-row">
+            <td class="px-5 py-3.5 whitespace-nowrap font-tabular-data font-semibold text-secondary">
+              <span class="bg-surface-container-low px-2 py-0.5 rounded border border-outline-variant/30">#CC-{{ carga.id|stringformat:"04d" }}</span>
+            </td>
+            <td class="px-5 py-3.5 whitespace-nowrap">
+              <div class="font-semibold text-primary">{{ carga.vehiculo.placa }}</div>
+              <div class="text-xs text-on-surface-variant">{{ carga.vehiculo.modelo }}</div>
+            </td>
+            <td class="px-5 py-3.5 whitespace-nowrap font-medium text-primary">
+              {{ carga.conductor.nombre_completo }}
+            </td>
+            <td class="px-5 py-3.5 whitespace-nowrap font-tabular-data font-bold text-primary">
+              {{ carga.litros_cargados }} L
+            </td>
+            <td class="px-5 py-3.5 whitespace-nowrap font-tabular-data font-bold text-emerald-800">
+              $ {{ carga.costo_total|floatformat:0 }}
+            </td>
+            <td class="px-5 py-3.5 whitespace-nowrap text-on-surface-variant">
+              {{ carga.ciudad }}
+            </td>
+            <td class="px-5 py-3.5 whitespace-nowrap font-tabular-data text-on-surface-variant">
+              {{ carga.fecha_carga|date:"d M Y" }}
+            </td>
+            <td class="px-5 py-3.5 whitespace-nowrap text-right">
+              <a href="{% url 'combustible_detalle' carga.id %}" class="p-1.5 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-lg transition-colors inline-block" title="Ver comprobante">
+                <span class="material-symbols-outlined text-[18px]">visibility</span>
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="8" class="px-5 py-8 text-center text-on-surface-variant">
+              No hay registros de combustible ingresados.
+            </td>
+          </tr>
+          {% endfor %}
+          <tr id="no-fuel-row" style="display: none;">
+            <td colspan="8" class="px-5 py-8 text-center text-on-surface-variant">
+              No se encontraron registros de combustible coincidentes.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  const searchInput = document.getElementById('search-input');
+  const rows = document.querySelectorAll('.fuel-row');
+  const noResultsRow = document.getElementById('no-fuel-row');
+
+  function filterFuel() {
+    const q = (searchInput?.value || '').toLowerCase().trim();
+    let count = 0;
+
+    rows.forEach(row => {
+      const text = row.innerText.toLowerCase();
+      if (!q || text.includes(q)) {
+        row.style.display = '';
+        count++;
+      } else {
+        row.style.display = 'none';
+      }
+    });
+
+    if (noResultsRow) {
+      noResultsRow.style.display = count === 0 && rows.length > 0 ? '' : 'none';
+    }
+  }
+
+  searchInput?.addEventListener('input', filterFuel);
+
+  // CSV Export
+  document.getElementById('btn-export-csv')?.addEventListener('click', () => {
+    const table = document.getElementById('combustible-table');
+    if (!table) return;
+    let csv = [];
+    const headers = [];
+    table.querySelectorAll('thead th').forEach((th, idx) => {
+      if (idx < 7) headers.push(`"${th.innerText.trim().replace(/"/g, '""')}"`);
+    });
+    csv.push(headers.join(','));
+
+    table.querySelectorAll('tbody tr.fuel-row').forEach(tr => {
+      if (tr.style.display !== 'none') {
+        const rowData = [];
+        tr.querySelectorAll('td').forEach((td, idx) => {
+          if (idx < 7) rowData.push(`"${td.innerText.replace(/\s+/g, ' ').trim().replace(/"/g, '""')}"`);
+        });
+        csv.push(rowData.join(','));
+      }
+    });
+
+    const blob = new Blob([csv.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `combustible_logicarga_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+</script>
+{% endblock %}

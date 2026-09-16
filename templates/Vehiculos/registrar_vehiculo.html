@@ -1,0 +1,261 @@
+{% extends "base.html" %}
+
+{% block title %}LogiCarga - Registrar Vehículo{% endblock %}
+
+{% block header_title %}Registrar Vehículo{% endblock %}
+{% block header_subtitle %}Alta de nueva unidad de transporte y registro de especificaciones técnicas{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto space-y-6">
+  <!-- Botón Volver -->
+  <div class="flex items-center">
+    <a class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-lg border border-outline-variant text-on-surface-variant hover:text-primary hover:bg-surface-container text-body-sm font-medium transition-colors" href="{% url 'vehiculos_lista' %}">
+      <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+      <span>Volver a Vehículos</span>
+    </a>
+  </div>
+
+  <!-- Form Errors Display -->
+  {% if form.errors %}
+  <div class="p-4 rounded-xl bg-error-container/40 border border-error/40 text-error space-y-1 shadow-xs">
+    <div class="flex items-center gap-2 font-bold font-headline-sm text-headline-sm">
+      <span class="material-symbols-outlined text-[20px]">error</span>
+      <span>Por favor revise los errores antes de continuar:</span>
+    </div>
+    <ul class="list-disc list-inside text-body-sm space-y-0.5 pl-6">
+      {% for field in form %}
+        {% for error in field.errors %}
+          <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+        {% endfor %}
+      {% endfor %}
+      {% for error in form.non_field_errors %}
+        <li>{{ error }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  <!-- Card Contenedor Elegante -->
+  <div class="bg-surface-container-lowest rounded-xl border border-outline-variant/40 shadow-xs overflow-hidden">
+    <!-- Encabezado de la Ficha Técnica -->
+    <div class="px-8 py-5 border-b border-outline-variant/30 bg-surface-bright flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="h-10 w-10 rounded-lg bg-surface-container-low border border-secondary-fixed flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined text-[22px]" style="font-variation-settings: 'FILL' 1;">local_shipping</span>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h2 class="font-headline-sm text-headline-sm text-primary font-bold">Ficha de Alta de Vehículo</h2>
+            <span class="px-2 py-0.5 rounded text-[11px] font-label-sm font-semibold uppercase bg-surface-container text-primary">Inventario</span>
+          </div>
+          <p class="font-body-sm text-body-sm text-on-surface-variant">Complete los campos requeridos para habilitar la unidad dentro de la red logística nacional.</p>
+        </div>
+      </div>
+      <div class="flex items-center text-on-surface-variant font-label-sm text-label-sm">
+        <span class="text-error mr-1 font-bold">*</span> Campos obligatorios
+      </div>
+    </div>
+
+    <!-- Form Body -->
+    <form class="p-8 space-y-6" id="vehicleForm" method="POST" action="">
+      {% csrf_token %}
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- 1. Placa -->
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label class="font-label-md text-label-md text-primary font-semibold flex items-center gap-1" for="plate">
+              Placa / Matrícula <span class="text-error font-bold">*</span>
+            </label>
+            <span class="font-label-sm text-label-sm text-emerald-800 flex items-center gap-0.5 font-medium bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+              <span class="material-symbols-outlined text-[14px]">check_circle</span>
+              Estándar
+            </span>
+          </div>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-on-surface-variant">
+              <span class="material-symbols-outlined text-[18px]">badge</span>
+            </div>
+            <input class="block w-full h-10 pl-9 pr-9 rounded-lg border border-outline-variant bg-surface-container-lowest text-primary font-tabular-data text-tabular-data uppercase tracking-wider focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/15 transition-all" id="plate" name="placa" placeholder="Ej. TRK-8921" required="" type="text" value="{{ form.placa.value|default:'' }}"/>
+          </div>
+          <p class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1">
+            <span class="material-symbols-outlined text-[14px]">info</span>
+            Formato estándar alfanumérico homologado por el Ministerio de Transporte.
+          </p>
+        </div>
+
+        <!-- 2. Modelo -->
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label class="font-label-md text-label-md text-primary font-semibold flex items-center gap-1" for="model">
+              Modelo y Fabricante <span class="text-error font-bold">*</span>
+            </label>
+            <span class="font-label-sm text-label-sm text-on-surface-variant font-medium">Tractocamión / Rígido</span>
+          </div>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-on-surface-variant">
+              <span class="material-symbols-outlined text-[18px]">precision_manufacturing</span>
+            </div>
+            <input class="block w-full h-10 pl-9 pr-3 rounded-lg border border-outline-variant bg-surface-container-lowest text-primary font-body-md text-body-md focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/15 transition-all" id="model" name="modelo" placeholder="Ej. Volvo FH 540 / Scania R450" required="" type="text" value="{{ form.modelo.value|default:'' }}"/>
+          </div>
+          <p class="font-body-sm text-body-sm text-on-surface-variant">
+            Especifique la marca, línea comercial y configuración del chasis.
+          </p>
+        </div>
+
+        <!-- 3. Capacidad de carga (kg) -->
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label class="font-label-md text-label-md text-primary font-semibold flex items-center gap-1" for="payload">
+              Capacidad de Carga Útil <span class="text-error font-bold">*</span>
+            </label>
+            <span class="font-label-sm text-label-sm text-secondary font-semibold">En kilogramos (kg)</span>
+          </div>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-on-surface-variant">
+              <span class="material-symbols-outlined text-[18px]">weight</span>
+            </div>
+            <input class="block w-full h-10 pl-9 pr-14 rounded-lg border border-outline-variant bg-surface-container-lowest text-primary font-tabular-data text-tabular-data focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/15 transition-all" id="payload" min="100" name="capacidad_carga" placeholder="32000" required="" step="50" type="number" value="{{ form.capacidad_carga.value|default:'' }}"/>
+            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+              <span class="font-label-md text-label-md font-bold text-on-surface-variant bg-surface-container px-2 py-0.5 rounded">kg</span>
+            </div>
+          </div>
+          <p class="font-body-sm text-body-sm text-on-surface-variant">
+            Carga útil homologada según ficha técnica y tarjeta de circulación.
+          </p>
+        </div>
+
+        <!-- 4. Kilometraje actual -->
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label class="font-label-md text-label-md text-primary font-semibold flex items-center gap-1" for="odometer">
+              Kilometraje Actual <span class="text-error font-bold">*</span>
+            </label>
+            <span class="font-label-sm text-label-sm text-on-surface-variant">Odómetro inicial</span>
+          </div>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-on-surface-variant">
+              <span class="material-symbols-outlined text-[18px]">speed</span>
+            </div>
+            <input class="block w-full h-10 pl-9 pr-14 rounded-lg border border-outline-variant bg-surface-container-lowest text-primary font-tabular-data text-tabular-data focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/15 transition-all" id="odometer" min="0" name="kilometraje_actual" placeholder="0" required="" step="1" type="number" value="{{ form.kilometraje_actual.value|default:'0' }}"/>
+            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+              <span class="font-label-md text-label-md font-bold text-on-surface-variant bg-surface-container px-2 py-0.5 rounded">km</span>
+            </div>
+          </div>
+          <p class="font-body-sm text-body-sm text-on-surface-variant">
+            Lectura de odómetro inicial verificada previo a despacho.
+          </p>
+        </div>
+      </div>
+
+      <!-- 5. Estado del Vehículo -->
+      <div class="pt-2 space-y-2">
+        <label class="font-label-md text-label-md text-primary font-semibold flex items-center gap-1">
+          Estado Inicial del Vehículo <span class="text-error font-bold">*</span>
+        </label>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+          <!-- Opción 1: Disponible -->
+          <label class="relative flex flex-col p-3.5 rounded-lg border-2 border-emerald-300 bg-emerald-50/50 cursor-pointer hover:bg-emerald-50 transition-all shadow-xs group">
+            <input checked="" class="sr-only" name="estado" type="radio" value="Disponible"/>
+            <div class="flex items-center justify-between mb-1.5">
+              <div class="flex items-center gap-2">
+                <span class="h-2.5 w-2.5 rounded-full bg-emerald-600"></span>
+                <span class="font-label-lg text-label-lg font-bold text-emerald-800">Disponible</span>
+              </div>
+              <span class="material-symbols-outlined text-emerald-700 text-[20px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+            </div>
+            <p class="font-body-sm text-body-sm text-on-surface-variant">
+              Unidad lista para asignación inmediata en hoja de ruta nacional.
+            </p>
+          </label>
+
+          <!-- Opción 2: En viaje -->
+          <label class="relative flex flex-col p-3.5 rounded-lg border border-outline-variant bg-surface-container-lowest cursor-pointer hover:border-secondary hover:bg-surface-container-low transition-all shadow-xs group">
+            <input class="sr-only" name="estado" type="radio" value="En viaje"/>
+            <div class="flex items-center justify-between mb-1.5">
+              <div class="flex items-center gap-2">
+                <span class="h-2.5 w-2.5 rounded-full bg-blue-600"></span>
+                <span class="font-label-lg text-label-lg font-bold text-primary">En viaje</span>
+              </div>
+              <span class="material-symbols-outlined text-outline-variant text-[20px] group-hover:text-secondary">radio_button_unchecked</span>
+            </div>
+            <p class="font-body-sm text-body-sm text-on-surface-variant">
+              Unidad en tránsito activo con manifiesto de carga generado.
+            </p>
+          </label>
+
+          <!-- Opción 3: Mantenimiento -->
+          <label class="relative flex flex-col p-3.5 rounded-lg border border-outline-variant bg-surface-container-lowest cursor-pointer hover:border-amber-600 hover:bg-amber-50/40 transition-all shadow-xs group">
+            <input class="sr-only" name="estado" type="radio" value="Mantenimiento"/>
+            <div class="flex items-center justify-between mb-1.5">
+              <div class="flex items-center gap-2">
+                <span class="h-2.5 w-2.5 rounded-full bg-amber-600"></span>
+                <span class="font-label-lg text-label-lg font-bold text-primary">Mantenimiento</span>
+              </div>
+              <span class="material-symbols-outlined text-outline-variant text-[20px] group-hover:text-amber-600">radio_button_unchecked</span>
+            </div>
+            <p class="font-body-sm text-body-sm text-on-surface-variant">
+              En taller mecánico preventivo o correctivo; no asignable.
+            </p>
+          </label>
+        </div>
+      </div>
+
+      <!-- Technical Notes / Operational Notice -->
+      <div class="p-4 bg-surface-container-low rounded-lg border border-outline-variant/50 flex items-start gap-3">
+        <span class="material-symbols-outlined text-secondary text-[20px] mt-0.5">shield</span>
+        <div class="flex-1 text-body-sm font-body-sm text-on-surface">
+          <span class="font-semibold text-primary">Validación automática de flota:</span> Al presionar <strong class="text-primary">Guardar Vehículo</strong>, el sistema validará la placa y sincronizará las lecturas iniciales con el módulo de despacho de <span class="font-medium">LogiCarga Transportes S.A.</span>
+        </div>
+      </div>
+
+      <!-- Botones de Acción al Pie de la Tarjeta -->
+      <div class="pt-5 border-t border-outline-variant/30 flex items-center justify-end gap-3">
+        <a class="h-10 px-5 rounded-lg border border-outline-variant bg-surface-container-lowest text-primary font-label-md text-label-md font-semibold hover:bg-surface-container hover:border-outline focus:outline-none transition-all duration-150 inline-flex items-center justify-center" href="{% url 'vehiculos_lista' %}">
+          Cancelar
+        </a>
+        <button class="h-10 px-6 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-label-lg text-label-lg font-semibold inline-flex items-center gap-2 shadow-xs transition-all duration-150 cursor-pointer" type="submit">
+          <span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">save</span>
+          <span>Guardar Vehículo</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  document.querySelectorAll('input[name="estado"]').forEach((radio) => {
+    radio.addEventListener('change', (e) => {
+      document.querySelectorAll('input[name="estado"]').forEach((r) => {
+        const parentLabel = r.closest('label');
+        const icon = parentLabel.querySelector('.material-symbols-outlined');
+        
+        if (r.checked) {
+          if (r.value === 'Disponible') {
+            parentLabel.className = 'relative flex flex-col p-3.5 rounded-lg border-2 border-emerald-300 bg-emerald-50/50 cursor-pointer hover:bg-emerald-50 transition-all shadow-xs group';
+            icon.textContent = 'check_circle';
+            icon.className = 'material-symbols-outlined text-emerald-700 text-[20px]';
+            icon.style.fontVariationSettings = "'FILL' 1";
+          } else if (r.value === 'En viaje') {
+            parentLabel.className = 'relative flex flex-col p-3.5 rounded-lg border-2 border-blue-300 bg-blue-50/60 cursor-pointer hover:bg-blue-50 transition-all shadow-xs group';
+            icon.textContent = 'check_circle';
+            icon.className = 'material-symbols-outlined text-blue-700 text-[20px]';
+            icon.style.fontVariationSettings = "'FILL' 1";
+          } else if (r.value === 'Mantenimiento') {
+            parentLabel.className = 'relative flex flex-col p-3.5 rounded-lg border-2 border-amber-300 bg-amber-50/70 cursor-pointer hover:bg-amber-50 transition-all shadow-xs group';
+            icon.textContent = 'check_circle';
+            icon.className = 'material-symbols-outlined text-amber-700 text-[20px]';
+            icon.style.fontVariationSettings = "'FILL' 1";
+          }
+        } else {
+          parentLabel.className = 'relative flex flex-col p-3.5 rounded-lg border border-outline-variant bg-surface-container-lowest cursor-pointer hover:border-secondary hover:bg-surface-container-low transition-all shadow-xs group';
+          icon.textContent = 'radio_button_unchecked';
+          icon.className = 'material-symbols-outlined text-outline-variant text-[20px] group-hover:text-secondary';
+          icon.style.fontVariationSettings = "'FILL' 0";
+        }
+      });
+    });
+  });
+</script>
+{% endblock %}

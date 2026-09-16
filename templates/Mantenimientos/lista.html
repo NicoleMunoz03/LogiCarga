@@ -1,0 +1,280 @@
+{% extends "base.html" %}
+
+{% block title %}LogiCarga - Control de Mantenimientos{% endblock %}
+
+{% block header_title %}Control de Mantenimientos{% endblock %}
+{% block header_subtitle %}Seguimiento de órdenes técnicas, costos de taller y mantenimientos preventivos y correctivos{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+  <!-- ENCABEZADO DE PÁGINA Y ACCIONES -->
+  <section class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-outline-variant/40">
+    <div>
+      <h2 class="font-headline-md text-headline-md font-bold text-primary tracking-tight">Órdenes Técnicas de Flota</h2>
+      <p class="font-body-md text-body-md text-on-surface-variant mt-0.5">Seguimiento de mantenimientos realizados a la flota e intervenciones en taller</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <button id="btn-export-mantenimientos" class="inline-flex items-center gap-2 px-4 h-10 bg-white border border-outline-variant hover:bg-surface-container-low text-primary font-label-md text-label-md rounded-lg shadow-xs transition-colors cursor-pointer" type="button">
+        <span class="material-symbols-outlined text-lg text-on-surface-variant">download</span>
+        <span>Exportar CSV</span>
+      </button>
+      <a href="{% url 'mantenimiento_crear' %}" class="inline-flex items-center gap-2 px-4 h-10 bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md rounded-lg shadow-xs transition-colors">
+        <span class="material-symbols-outlined text-lg">add</span>
+        <span>+ Registrar Mantenimiento</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- TARJETAS DE INDICADORES / KPIS OPERACIONALES -->
+  <section aria-label="Indicadores Clave de Rendimiento" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- KPI 1: Mantenimientos Activos -->
+    <div class="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant/40 shadow-xs hover:border-amber-300 transition-colors">
+      <div class="flex items-center justify-between mb-2">
+        <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold text-[11px]">Mantenimientos Activos</span>
+        <div class="p-2 rounded-lg bg-amber-50 text-amber-700">
+          <span class="material-symbols-outlined text-lg">engineering</span>
+        </div>
+      </div>
+      <div class="flex items-baseline gap-2">
+        <span class="font-headline-xl text-headline-xl font-bold text-primary font-tabular-data">{{ total_activos }}</span>
+        <span class="font-label-md text-label-md text-amber-700 font-medium">en taller</span>
+      </div>
+      <div class="mt-2 text-body-sm font-body-sm text-on-surface-variant flex items-center gap-1.5">
+        <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+        <span>{{ total_programados }} prog. • {{ total_en_proceso }} en proceso</span>
+      </div>
+    </div>
+
+    <!-- KPI 2: Total Finalizados -->
+    <div class="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant/40 shadow-xs hover:border-emerald-300 transition-colors">
+      <div class="flex items-center justify-between mb-2">
+        <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold text-[11px]">Total Finalizados</span>
+        <div class="p-2 rounded-lg bg-emerald-50 text-emerald-700">
+          <span class="material-symbols-outlined text-lg">check_circle</span>
+        </div>
+      </div>
+      <div class="flex items-baseline gap-2">
+        <span class="font-headline-xl text-headline-xl font-bold text-primary font-tabular-data">{{ total_finalizados }}</span>
+        <span class="font-label-md text-label-md text-emerald-700 font-medium">completados</span>
+      </div>
+      <div class="mt-2 text-body-sm font-body-sm text-on-surface-variant flex items-center gap-1.5">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+        <span>100% control de calidad</span>
+      </div>
+    </div>
+
+    <!-- KPI 3: Inversión Total -->
+    <div class="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant/40 shadow-xs hover:border-secondary transition-colors">
+      <div class="flex items-center justify-between mb-2">
+        <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold text-[11px]">Inversión Acumulada</span>
+        <div class="p-2 rounded-lg bg-surface-container-low text-primary">
+          <span class="material-symbols-outlined text-lg">payments</span>
+        </div>
+      </div>
+      <div class="flex items-baseline gap-2">
+        <span class="font-headline-xl text-headline-xl font-bold text-primary font-tabular-data">${{ inversion_total|floatformat:0 }}</span>
+        <span class="font-label-md text-label-md text-on-surface-variant font-medium">COP</span>
+      </div>
+      <div class="mt-2 text-body-sm font-body-sm text-on-surface-variant flex items-center gap-1.5">
+        <span class="material-symbols-outlined text-[15px] text-emerald-600">verified</span>
+        <span>Total invertido en taller</span>
+      </div>
+    </div>
+
+    <!-- KPI 4: Total Registros -->
+    <div class="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant/40 shadow-xs hover:border-secondary transition-colors">
+      <div class="flex items-center justify-between mb-2">
+        <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold text-[11px]">Total Registros</span>
+        <div class="p-2 rounded-lg bg-surface-container-low text-primary">
+          <span class="material-symbols-outlined text-lg">build</span>
+        </div>
+      </div>
+      <div class="flex items-baseline gap-2">
+        <span class="font-headline-xl text-headline-xl font-bold text-primary font-tabular-data">{{ total_registros }}</span>
+        <span class="font-label-md text-label-md text-on-surface-variant font-medium">órdenes</span>
+      </div>
+      <div class="mt-2 text-body-sm font-body-sm text-on-surface-variant flex items-center gap-1.5">
+        <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+        <span>Historial técnico completo</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- FILTROS Y CONTROLES DE BÚSQUEDA -->
+  <section class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/40 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+    <div class="relative flex-1 min-w-[280px]">
+      <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-on-surface-variant">
+        <span class="material-symbols-outlined text-[20px]">search</span>
+      </span>
+      <input id="search-input-mantenimientos" class="w-full h-10 pl-10 pr-4 bg-surface-container-lowest border border-outline-variant rounded-lg text-primary font-body-md text-body-md placeholder-on-surface-variant/70 focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary transition-colors" placeholder="Buscar por placa, taller o descripción..." type="text"/>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-3">
+      <select id="filter-estado-mant" class="h-10 px-3 bg-surface-container-lowest border border-outline-variant rounded-lg text-primary font-body-md text-body-md focus:outline-none focus:border-secondary">
+        <option value="">Todos los Estados</option>
+        <option value="Programado">Programado</option>
+        <option value="En Proceso">En Proceso</option>
+        <option value="Finalizado">Finalizado</option>
+      </select>
+      <select id="filter-tipo-mant" class="h-10 px-3 bg-surface-container-lowest border border-outline-variant rounded-lg text-primary font-body-md text-body-md focus:outline-none focus:border-secondary">
+        <option value="">Todos los Tipos</option>
+        <option value="Preventivo">Preventivo</option>
+        <option value="Correctivo">Correctivo</option>
+        <option value="Predictivo">Predictivo</option>
+      </select>
+    </div>
+  </section>
+
+  <!-- TABLA DE ÓRDENES DE MANTENIMIENTO -->
+  <section class="bg-surface-container-lowest rounded-xl border border-outline-variant/40 shadow-xs overflow-hidden">
+    <div class="overflow-x-auto">
+      <table id="tabla-mantenimientos" class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-surface-bright border-b border-outline-variant/30 h-11">
+            <th class="px-6 py-3 font-label-md text-label-md text-on-surface-variant font-bold uppercase tracking-wider text-[11px]" scope="col">ID Orden</th>
+            <th class="px-6 py-3 font-label-md text-label-md text-on-surface-variant font-bold uppercase tracking-wider text-[11px]" scope="col">Vehículo</th>
+            <th class="px-6 py-3 font-label-md text-label-md text-on-surface-variant font-bold uppercase tracking-wider text-[11px]" scope="col">Tipo</th>
+            <th class="px-6 py-3 font-label-md text-label-md text-on-surface-variant font-bold uppercase tracking-wider text-[11px]" scope="col">Taller Responsable</th>
+            <th class="px-6 py-3 font-label-md text-label-md text-on-surface-variant font-bold uppercase tracking-wider text-[11px]" scope="col">Fecha Programada</th>
+            <th class="px-6 py-3 font-label-md text-label-md text-on-surface-variant font-bold uppercase tracking-wider text-[11px]" scope="col">Costo</th>
+            <th class="px-6 py-3 font-label-md text-label-md text-on-surface-variant font-bold uppercase tracking-wider text-[11px]" scope="col">Estado</th>
+            <th class="px-6 py-3 font-label-md text-label-md text-on-surface-variant font-bold uppercase tracking-wider text-[11px] text-right" scope="col">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-outline-variant/20 font-body-md text-body-md">
+          {% for m in mantenimientos %}
+          <tr class="hover:bg-surface-container-low/60 transition-colors row-mantenimiento" data-estado="{{ m.estado }}" data-tipo="{{ m.tipo_mantenimiento }}">
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span class="font-tabular-data font-bold text-secondary bg-surface-container-low px-2 py-0.5 rounded border border-outline-variant/30">MNT-{{ m.id|stringformat:"04d" }}</span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="font-semibold text-primary">{{ m.vehiculo.placa }}</div>
+              <div class="text-xs text-on-surface-variant">{{ m.vehiculo.modelo }}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              {% if m.tipo_mantenimiento == 'Preventivo' %}
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-800 border border-blue-200">{{ m.tipo_mantenimiento }}</span>
+              {% elif m.tipo_mantenimiento == 'Correctivo' %}
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-800 border border-rose-200">{{ m.tipo_mantenimiento }}</span>
+              {% else %}
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-50 text-purple-800 border border-purple-200">{{ m.tipo_mantenimiento }}</span>
+              {% endif %}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-on-surface-variant">
+              {{ m.taller_responsable }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap font-tabular-data text-on-surface-variant">
+              {{ m.fecha_programada|date:"d M Y" }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap font-tabular-data font-semibold text-primary">
+              ${{ m.costo|floatformat:0 }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              {% if m.estado == 'Programado' %}
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 border border-amber-300 text-amber-800">
+                <span class="material-symbols-outlined text-xs">schedule</span>{{ m.estado }}
+              </span>
+              {% elif m.estado == 'En Proceso' %}
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 border border-blue-200 text-blue-800">
+                <span class="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse"></span>{{ m.estado }}
+              </span>
+              {% else %}
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 border border-emerald-200 text-emerald-800">
+                <span class="material-symbols-outlined text-xs">check_circle</span>{{ m.estado }}
+              </span>
+              {% endif %}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-right">
+              <a href="{% url 'mantenimiento_detalle' m.id %}" class="p-1.5 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-lg transition-colors inline-block" title="Ver detalle">
+                <span class="material-symbols-outlined text-[18px]">visibility</span>
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="8" class="px-6 py-8 text-center text-on-surface-variant">
+              No hay mantenimientos registrados en la flota.
+            </td>
+          </tr>
+          {% endfor %}
+          <tr id="no-mantenimientos-row" style="display: none;">
+            <td colspan="8" class="px-6 py-8 text-center text-on-surface-variant">
+              No se encontraron mantenimientos coincidentes con los filtros aplicados.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  const searchInput = document.getElementById('search-input-mantenimientos');
+  const filterEstado = document.getElementById('filter-estado-mant');
+  const filterTipo = document.getElementById('filter-tipo-mant');
+  const rows = document.querySelectorAll('.row-mantenimiento');
+  const noRows = document.getElementById('no-mantenimientos-row');
+
+  function applyFilters() {
+    const q = (searchInput?.value || '').toLowerCase().trim();
+    const estado = filterEstado?.value || '';
+    const tipo = filterTipo?.value || '';
+
+    let visible = 0;
+    rows.forEach(r => {
+      const text = r.innerText.toLowerCase();
+      const rEstado = r.getAttribute('data-estado') || '';
+      const rTipo = r.getAttribute('data-tipo') || '';
+
+      const matchQ = !q || text.includes(q);
+      const matchE = !estado || rEstado === estado;
+      const matchT = !tipo || rTipo === tipo;
+
+      if (matchQ && matchE && matchT) {
+        r.style.display = '';
+        visible++;
+      } else {
+        r.style.display = 'none';
+      }
+    });
+
+    if (noRows) noRows.style.display = visible === 0 && rows.length > 0 ? '' : 'none';
+  }
+
+  searchInput?.addEventListener('input', applyFilters);
+  filterEstado?.addEventListener('change', applyFilters);
+  filterTipo?.addEventListener('change', applyFilters);
+
+  // CSV Export
+  document.getElementById('btn-export-mantenimientos')?.addEventListener('click', () => {
+    const table = document.getElementById('tabla-mantenimientos');
+    if (!table) return;
+    let csv = [];
+    const headers = [];
+    table.querySelectorAll('thead th').forEach((th, idx) => {
+      if (idx < 7) headers.push(`"${th.innerText.trim().replace(/"/g, '""')}"`);
+    });
+    csv.push(headers.join(','));
+
+    table.querySelectorAll('tbody tr.row-mantenimiento').forEach(tr => {
+      if (tr.style.display !== 'none') {
+        const rowData = [];
+        tr.querySelectorAll('td').forEach((td, idx) => {
+          if (idx < 7) rowData.push(`"${td.innerText.replace(/\s+/g, ' ').trim().replace(/"/g, '""')}"`);
+        });
+        csv.push(rowData.join(','));
+      }
+    });
+
+    const blob = new Blob([csv.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `mantenimientos_logicarga_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+</script>
+{% endblock %}

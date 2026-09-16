@@ -1,0 +1,266 @@
+{% extends "base.html" %}
+
+{% block title %}LogiCarga - Registrar Carga de Combustible{% endblock %}
+
+{% block header_title %}Registrar Carga de Combustible{% endblock %}
+{% block header_subtitle %}Sincronización telemática de abastecimiento de combustible y costos de ruta{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto space-y-6">
+  <!-- Botón Volver -->
+  <div class="flex items-center">
+    {% if is_admin %}
+    <a class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-lg border border-outline-variant text-on-surface-variant hover:text-primary hover:bg-surface-container text-body-sm font-medium transition-colors" href="{% url 'combustible_lista' %}">
+      <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+      <span>Volver a Combustible</span>
+    </a>
+    {% else %}
+    <a class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-lg border border-outline-variant text-on-surface-variant hover:text-primary hover:bg-surface-container text-body-sm font-medium transition-colors" href="{% url 'mis_viajes' %}">
+      <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+      <span>Volver a Mis Viajes</span>
+    </a>
+    {% endif %}
+  </div>
+
+  <!-- Form Errors Display -->
+  {% if form.errors %}
+  <div class="p-4 rounded-xl bg-error-container/40 border border-error/40 text-error space-y-1 shadow-xs">
+    <div class="flex items-center gap-2 font-bold font-headline-sm text-headline-sm">
+      <span class="material-symbols-outlined text-[20px]">error</span>
+      <span>Por favor revise los errores antes de continuar:</span>
+    </div>
+    <ul class="list-disc list-inside text-body-sm space-y-0.5 pl-6">
+      {% for field in form %}
+        {% for error in field.errors %}
+          <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+        {% endfor %}
+      {% endfor %}
+      {% for error in form.non_field_errors %}
+        <li>{{ error }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  <!-- MAIN FORM CARD -->
+  <form method="POST" action="" class="bg-surface-container-lowest border border-outline-variant/40 rounded-xl shadow-xs overflow-hidden">
+    {% csrf_token %}
+    <!-- Card Header -->
+    <div class="px-8 py-5 border-b border-outline-variant/30 bg-surface-bright flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-lg bg-surface-container-low border border-outline-variant/40 flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined text-[22px]" style="font-variation-settings: 'FILL' 1;">local_gas_station</span>
+        </div>
+        <div>
+          <h2 class="font-headline-sm text-headline-sm font-bold text-primary">Ficha de Abastecimiento de Combustible</h2>
+          <p class="font-body-sm text-body-sm text-on-surface-variant">Sincronización telemática de abastecimiento y costos operativos de ruta</p>
+        </div>
+      </div>
+      <span class="font-label-sm text-label-sm text-on-surface-variant">
+        <span class="text-error font-bold">*</span> Campos obligatorios
+      </span>
+    </div>
+
+    <div class="p-8 space-y-6">
+      <!-- FORM GRID -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+        <!-- 1. Viaje Asociado -->
+        <div class="md:col-span-2 space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label class="font-label-md text-label-md font-semibold text-primary flex items-center gap-1" for="viaje-select">
+              <span>Viaje asociado</span>
+              <span class="text-error font-bold">*</span>
+            </label>
+            <span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+              <span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+              Manifiesto Activo
+            </span>
+          </div>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-primary">
+              <span class="material-symbols-outlined text-[20px]">route</span>
+            </div>
+            <select name="viaje" id="viaje-select" class="w-full h-11 pl-11 pr-10 rounded-lg border border-outline-variant bg-white font-body-md text-body-md text-primary font-medium focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-colors appearance-none cursor-pointer" required>
+              <option value="" disabled {% if not form.viaje.value %}selected{% endif %}>Seleccione un viaje</option>
+              {% for v in viajes %}
+              <option value="{{ v.id }}" data-vehiculo="{{ v.vehiculo.id }}" data-conductor="{{ v.conductor.id }}" {% if form.viaje.value|stringformat:"s" == v.id|stringformat:"s" %}selected{% endif %}>
+                VJ-{{ v.id|stringformat:"05d" }} • {{ v.ciudad_origen }} → {{ v.ciudad_destino }} ({{ v.vehiculo.placa }} - {{ v.conductor.nombre_completo }})
+              </option>
+              {% endfor %}
+            </select>
+            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-on-surface-variant">
+              <span class="material-symbols-outlined text-[20px]">expand_more</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Vehículo Asociado -->
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label class="font-label-md text-label-md font-semibold text-primary flex items-center gap-1" for="vehiculo-select">
+              <span>Vehículo</span>
+              <span class="text-error font-bold">*</span>
+            </label>
+            <span class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 uppercase bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+              Operativo
+            </span>
+          </div>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-primary">
+              <span class="material-symbols-outlined text-[20px]">local_shipping</span>
+            </div>
+            <select name="vehiculo" id="vehiculo-select" class="w-full h-11 pl-11 pr-10 rounded-lg border border-outline-variant bg-white font-body-md text-body-md text-primary font-medium focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-colors appearance-none cursor-pointer" required>
+              <option value="" disabled {% if not form.vehiculo.value %}selected{% endif %}>Seleccione un vehículo</option>
+              {% for veh in vehiculos %}
+              <option value="{{ veh.id }}" {% if form.vehiculo.value|stringformat:"s" == veh.id|stringformat:"s" %}selected{% endif %}>
+                {{ veh.placa }} • {{ veh.modelo }}
+              </option>
+              {% endfor %}
+            </select>
+            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-on-surface-variant">
+              <span class="material-symbols-outlined text-[20px]">expand_more</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Conductor Responsable -->
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label class="font-label-md text-label-md font-semibold text-primary flex items-center gap-1" for="conductor-select">
+              <span>Conductor</span>
+              <span class="text-error font-bold">*</span>
+            </label>
+            <span class="inline-flex items-center gap-1 text-[11px] font-bold text-blue-800 uppercase bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+              Licencia Activa
+            </span>
+          </div>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-primary">
+              <span class="material-symbols-outlined text-[20px]">badge</span>
+            </div>
+            <select name="conductor" id="conductor-select" class="w-full h-11 pl-11 pr-10 rounded-lg border border-outline-variant bg-white font-body-md text-body-md text-primary font-medium focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-colors appearance-none cursor-pointer" required>
+              <option value="" disabled {% if not form.conductor.value %}selected{% endif %}>Seleccione un conductor</option>
+              {% for c in conductores %}
+              <option value="{{ c.id }}" {% if form.conductor.value|stringformat:"s" == c.id|stringformat:"s" %}selected{% endif %}>
+                {{ c.nombre_completo }} ({{ c.numero_licencia }})
+              </option>
+              {% endfor %}
+            </select>
+            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-on-surface-variant">
+              <span class="material-symbols-outlined text-[20px]">expand_more</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Cantidad de Litros Cargados -->
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label class="font-label-md text-label-md font-semibold text-primary flex items-center gap-1" for="litros">
+              <span>Cantidad de litros cargados</span>
+              <span class="text-error font-bold">*</span>
+            </label>
+            <span class="font-label-sm text-label-sm text-on-surface-variant">Mayor a 0</span>
+          </div>
+          <div class="relative">
+            <input name="litros_cargados" id="litros" class="w-full h-11 pl-4 pr-14 rounded-lg border border-outline-variant bg-white font-tabular-data text-[16px] font-bold text-primary focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-colors" type="number" step="0.01" min="0.01" value="{{ form.litros_cargados.value|default:'' }}" required placeholder="0.00"/>
+            <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none">
+              <span class="font-label-md text-label-md font-bold text-on-surface-variant bg-surface-container px-2 py-0.5 rounded border border-outline-variant/40">Litros (L)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. Costo Total -->
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label class="font-label-md text-label-md font-semibold text-primary flex items-center gap-1" for="costo">
+              <span>Costo total</span>
+              <span class="text-error font-bold">*</span>
+            </label>
+            <span class="font-label-sm text-label-sm text-on-surface-variant">Moneda: COP</span>
+          </div>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-on-surface-variant font-bold">
+              $
+            </div>
+            <input name="costo_total" id="costo" class="w-full h-11 pl-9 pr-14 rounded-lg border border-outline-variant bg-white font-tabular-data text-[16px] font-bold text-primary focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-colors" type="number" step="0.01" min="0.01" value="{{ form.costo_total.value|default:'' }}" required placeholder="0.00"/>
+            <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none">
+              <span class="font-label-md text-label-md font-bold text-on-surface-variant bg-surface-container px-2 py-0.5 rounded border border-outline-variant/40">COP</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. Ciudad / Estación de Carga -->
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label class="font-label-md text-label-md font-semibold text-primary flex items-center gap-1" for="ciudad">
+              <span>Ciudad donde se realizó la carga</span>
+              <span class="text-error font-bold">*</span>
+            </label>
+            <span class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 uppercase bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+              Estación Certificada
+            </span>
+          </div>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-primary">
+              <span class="material-symbols-outlined text-[20px]">location_on</span>
+            </div>
+            <input name="ciudad" id="ciudad" class="w-full h-11 pl-11 pr-10 rounded-lg border border-outline-variant bg-white font-body-md text-body-md text-primary font-medium focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-colors" type="text" value="{{ form.ciudad.value|default:'' }}" placeholder="Ej. Bogotá D.C." required/>
+          </div>
+        </div>
+
+        <!-- 7. Fecha de la Carga -->
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label class="font-label-md text-label-md font-semibold text-primary flex items-center gap-1" for="fecha">
+              <span>Fecha de la carga</span>
+              <span class="text-error font-bold">*</span>
+            </label>
+            <span class="font-label-sm text-label-sm text-on-surface-variant">No puede ser futura</span>
+          </div>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-primary">
+              <span class="material-symbols-outlined text-[20px]">calendar_today</span>
+            </div>
+            <input name="fecha_carga" id="fecha" class="w-full h-11 pl-11 pr-10 rounded-lg border border-outline-variant bg-white font-tabular-data text-tabular-data text-primary font-medium focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-colors" type="date" value="{{ form.fecha_carga.value|default:'' }}" required/>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD FOOTER / ACTION BAR -->
+    <div class="px-8 py-4 bg-surface-bright border-t border-outline-variant/30 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-2 text-on-surface-variant font-body-sm text-body-sm text-[12px]">
+        <span class="material-symbols-outlined text-[18px]">verified_user</span>
+        <span>Validación de telemetría y comprobante contable de LogiCarga Transportes S.A.</span>
+      </div>
+      <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+        <a href="{% if is_admin %}{% url 'combustible_lista' %}{% else %}{% url 'mis_viajes' %}{% endif %}" class="px-5 h-10 rounded-lg border border-outline-variant bg-white hover:bg-surface-container text-primary font-label-md text-label-md font-semibold transition-colors shadow-xs flex items-center justify-center">
+          Cancelar
+        </a>
+        <button class="px-6 h-10 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-label-lg text-label-lg font-semibold shadow-xs flex items-center gap-2 transition-all duration-150 cursor-pointer" type="submit">
+          <span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">save</span>
+          <span>Guardar Registro</span>
+        </button>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  // Auto-fill vehicle and conductor based on selected trip
+  const viajeSelect = document.getElementById('viaje-select');
+  const vehiculoSelect = document.getElementById('vehiculo-select');
+  const conductorSelect = document.getElementById('conductor-select');
+
+  viajeSelect?.addEventListener('change', (e) => {
+    const selectedOption = viajeSelect.options[viajeSelect.selectedIndex];
+    const vId = selectedOption.getAttribute('data-vehiculo');
+    const cId = selectedOption.getAttribute('data-conductor');
+
+    if (vId && vehiculoSelect) vehiculoSelect.value = vId;
+    if (cId && conductorSelect) conductorSelect.value = cId;
+  });
+</script>
+{% endblock %}

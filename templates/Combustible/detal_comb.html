@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+
+{% block title %}LogiCarga - Detalle de Carga #{{ carga.id }}{% endblock %}
+
+{% block header_title %}Detalle de Carga de Combustible{% endblock %}
+{% block header_subtitle %}Comprobante telemático, volumen abastecido y liquidación económica de la recarga{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+  <!-- Botón Volver y Acciones -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2">
+    <div class="flex items-center gap-4">
+      <a href="{% if is_admin %}{% url 'combustible_lista' %}{% else %}{% url 'mis_viajes' %}{% endif %}" class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-lg border border-outline-variant text-on-surface-variant hover:text-primary hover:bg-surface-container text-body-sm font-medium transition-colors">
+        <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+        <span>Volver al listado</span>
+      </a>
+      <span class="font-tabular-data text-tabular-data px-2.5 py-0.5 rounded bg-surface-container text-primary font-bold border border-outline-variant/60">COMB-{{ carga.id|stringformat:"04d" }}</span>
+    </div>
+
+    <div class="flex items-center gap-2.5 flex-wrap">
+      <button onclick="window.print()" class="h-10 px-4 rounded-lg bg-surface-container-lowest border border-outline-variant text-primary font-label-md text-label-md font-semibold hover:bg-surface-container hover:border-outline transition-colors duration-150 flex items-center gap-2 shadow-xs cursor-pointer">
+        <span class="material-symbols-outlined text-base">print</span>
+        <span>Imprimir Comprobante</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- 1. AUDIT & TELEMETRY BANNER -->
+  <section class="bg-surface-container-lowest rounded-xl border border-outline-variant/40 p-5 shadow-xs flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 border-l-4 border-l-emerald-600">
+    <div class="flex items-center gap-4">
+      <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center border border-emerald-200 shrink-0">
+        <span class="material-symbols-outlined text-2xl">verified</span>
+      </div>
+      <div>
+        <div class="flex items-center gap-2.5">
+          <h2 class="font-headline-sm text-headline-sm text-primary font-semibold">Carga Verificada por Telemetría CAN-bus</h2>
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 font-label-sm text-label-sm uppercase font-bold">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-700"></span>
+            Aprobado
+          </span>
+        </div>
+        <p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+          Sincronización telemática directa sin discrepancias entre el surtidor de la estación EDS y los sensores volumétricos.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. RESUMEN VISUAL (4 BENTO KPI METRIC CARDS) -->
+  <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- Tarjeta 1: Litros Cargados -->
+    <div class="bg-surface-container-lowest rounded-xl border border-outline-variant/40 p-5 shadow-xs hover:border-outline transition-all duration-150">
+      <div class="flex items-center justify-between">
+        <span class="font-label-md text-label-md text-on-surface-variant uppercase text-[11px]">Litros Cargados</span>
+        <div class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined text-lg">opacity</span>
+        </div>
+      </div>
+      <div class="mt-3 flex items-baseline gap-2">
+        <span class="font-headline-xl text-headline-xl text-primary font-bold font-tabular-data">{{ carga.litros_cargados }} L</span>
+        <span class="font-label-sm text-label-sm text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Diesel ACPM</span>
+      </div>
+    </div>
+
+    <!-- Tarjeta 2: Valor Total -->
+    <div class="bg-surface-container-lowest rounded-xl border border-outline-variant/40 p-5 shadow-xs hover:border-outline transition-all duration-150">
+      <div class="flex items-center justify-between">
+        <span class="font-label-md text-label-md text-on-surface-variant uppercase text-[11px]">Valor Total</span>
+        <div class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined text-lg">payments</span>
+        </div>
+      </div>
+      <div class="mt-3 flex items-baseline gap-2">
+        <span class="font-headline-xl text-headline-xl text-primary font-bold font-tabular-data">${{ carga.costo_total|floatformat:0 }}</span>
+        <span class="font-label-sm text-label-sm text-on-surface-variant font-semibold">COP</span>
+      </div>
+    </div>
+
+    <!-- Tarjeta 3: Vehículo Asociado -->
+    <div class="bg-surface-container-lowest rounded-xl border border-outline-variant/40 p-5 shadow-xs hover:border-outline transition-all duration-150">
+      <div class="flex items-center justify-between">
+        <span class="font-label-md text-label-md text-on-surface-variant uppercase text-[11px]">Vehículo Asociado</span>
+        <div class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined text-lg">local_shipping</span>
+        </div>
+      </div>
+      <div class="mt-3">
+        <span class="font-headline-md text-headline-md text-primary font-bold block truncate">{{ carga.vehiculo.modelo }}</span>
+        <div class="flex items-center gap-2 mt-0.5">
+          <span class="font-label-md text-label-md bg-surface-container text-primary px-2 py-0.5 rounded font-bold font-tabular-data">{{ carga.vehiculo.placa }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tarjeta 4: Rendimiento Estimado -->
+    <div class="bg-surface-container-lowest rounded-xl border border-outline-variant/40 p-5 shadow-xs hover:border-outline transition-all duration-150">
+      <div class="flex items-center justify-between">
+        <span class="font-label-md text-label-md text-on-surface-variant uppercase text-[11px]">Ciudad y Estación</span>
+        <div class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-emerald-700">
+          <span class="material-symbols-outlined text-lg">location_on</span>
+        </div>
+      </div>
+      <div class="mt-3 flex items-baseline gap-2">
+        <span class="font-headline-md text-headline-md text-primary font-bold truncate">{{ carga.ciudad }}</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. DETAILED VIEW & CAN-BUS TELEMETRY GRID -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Main Query Record Card -->
+    <div class="lg:col-span-2 bg-surface-container-lowest rounded-xl border border-outline-variant/40 shadow-xs overflow-hidden flex flex-col justify-between">
+      <div>
+        <div class="p-6 border-b border-outline-variant/30 bg-surface-bright flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-surface-container-low border border-outline-variant/40 flex items-center justify-center text-primary">
+              <span class="material-symbols-outlined text-xl">receipt_long</span>
+            </div>
+            <div>
+              <h3 class="font-headline-sm text-headline-sm text-primary font-bold">Ficha Técnica de Carga</h3>
+              <p class="font-body-sm text-body-sm text-on-surface-variant">Registro maestro validado por estación de servicio autorizada</p>
+            </div>
+          </div>
+          <span class="inline-flex items-center px-3 py-1 rounded-full bg-surface-container font-label-sm text-label-sm text-primary font-bold border border-outline-variant/60">
+            Comprobante Oficial
+          </span>
+        </div>
+
+        <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8">
+          <div class="space-y-1">
+            <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider block text-[11px]">ID Registro de Carga</span>
+            <div class="flex items-center gap-2">
+              <span class="font-headline-sm text-headline-sm font-bold text-primary font-tabular-data">COMB-{{ carga.id|stringformat:"04d" }}</span>
+              <span class="material-symbols-outlined text-emerald-600 text-lg" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+            </div>
+          </div>
+
+          <div class="space-y-1">
+            <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider block text-[11px]">Viaje y Ruta Asignada</span>
+            <span class="font-label-lg text-label-lg font-bold text-secondary flex items-center gap-1 font-tabular-data">
+              VJ-{{ carga.viaje.id|stringformat:"05d" }} ({{ carga.viaje.ciudad_origen }} → {{ carga.viaje.ciudad_destino }})
+            </span>
+          </div>
+
+          <div class="space-y-1">
+            <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider block text-[11px]">Unidad de Transporte</span>
+            <p class="font-body-lg text-body-lg font-semibold text-primary">{{ carga.vehiculo.modelo }} • Placa {{ carga.vehiculo.placa }}</p>
+            <p class="font-body-sm text-body-sm text-on-surface-variant text-xs">Capacidad {{ carga.vehiculo.capacidad_carga }} kg</p>
+          </div>
+
+          <div class="space-y-1">
+            <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider block text-[11px]">Conductor Responsable</span>
+            <div class="flex items-center gap-3 pt-1">
+              <div class="w-9 h-9 rounded-full bg-surface-container flex items-center justify-center font-bold text-primary text-xs ring-1 ring-outline-variant">
+                {{ carga.conductor.nombre_completo|slice:":2"|upper }}
+              </div>
+              <div>
+                <p class="font-label-md text-label-md font-bold text-primary">{{ carga.conductor.nombre_completo }}</p>
+                <p class="font-body-sm text-body-sm text-on-surface-variant text-xs">Licencia {{ carga.conductor.numero_licencia }}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="space-y-1">
+            <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider block text-[11px]">Volumen y Combustible</span>
+            <p class="font-body-lg text-body-lg font-bold text-primary font-tabular-data">{{ carga.litros_cargados }} Litros (Diesel ACPM)</p>
+          </div>
+
+          <div class="space-y-1">
+            <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider block text-[11px]">Liquidación Económica</span>
+            <p class="font-body-lg text-body-lg font-bold text-primary font-tabular-data">${{ carga.costo_total|floatformat:0 }} COP</p>
+          </div>
+
+          <div class="space-y-1 md:col-span-2 pt-2 border-t border-outline-variant/30">
+            <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider block text-[11px]">Estación de Servicio & Ubicación</span>
+            <div class="flex items-center gap-2 mt-1">
+              <span class="material-symbols-outlined text-primary text-xl">store</span>
+              <span class="font-body-md text-body-md font-semibold text-primary">{{ carga.ciudad }}</span>
+            </div>
+          </div>
+
+          <div class="space-y-1 md:col-span-2">
+            <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider block text-[11px]">Fecha de Carga</span>
+            <div class="flex items-center gap-2 text-primary font-tabular-data">
+              <span class="material-symbols-outlined text-base text-on-surface-variant">schedule</span>
+              <span class="font-body-md text-body-md font-medium">{{ carga.fecha_carga|date:"d de F de Y" }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Telemetry CAN-bus -->
+    <div class="bg-surface-container-lowest rounded-xl border border-outline-variant/40 p-6 shadow-xs space-y-4">
+      <div class="flex items-center justify-between pb-4 border-b border-outline-variant/30">
+        <div class="flex items-center gap-2.5">
+          <span class="material-symbols-outlined text-primary text-xl">sensors</span>
+          <h3 class="font-headline-sm text-headline-sm text-primary font-bold">Telemetría CAN-bus</h3>
+        </div>
+        <span class="font-label-sm text-label-sm text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Enlace Activo</span>
+      </div>
+      <div class="py-3 space-y-3">
+        <div class="p-3 bg-surface-container-low rounded-lg border border-outline-variant/40">
+          <span class="block font-label-sm text-on-surface-variant uppercase text-[11px]">Volumen Registrado</span>
+          <span class="font-tabular-data font-bold text-primary text-lg">{{ carga.litros_cargados }} L</span>
+        </div>
+        <div class="p-3 bg-surface-container-low rounded-lg border border-outline-variant/40">
+          <span class="block font-label-sm text-on-surface-variant uppercase text-[11px]">Precio por Litro</span>
+          <span class="font-tabular-data font-bold text-primary text-lg">
+            {% if carga.litros_cargados > 0 %}
+              ${% widthratio carga.costo_total carga.litros_cargados 1 %} COP/L
+            {% else %}
+              $0 COP/L
+            {% endif %}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+
+{% block title %}Registrar Mantenimiento - LogiCarga{% endblock %}
+
+{% block header_breadcrumb %}
+<a class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-outline-variant text-on-surface hover:bg-surface-container-low font-label-md text-label-md font-medium transition-colors duration-150" href="{% url 'mantenimiento_lista' %}">
+  <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+  <span>Volver</span>
+</a>
+<div class="h-4 w-px bg-outline-variant"></div>
+<div class="flex items-center gap-1 text-on-surface-variant font-body-sm text-body-sm">
+  <span>Gestión Operativa</span>
+  <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+  <a href="{% url 'mantenimiento_lista' %}" class="hover:text-primary transition-colors">Mantenimientos</a>
+  <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+  <span class="text-primary font-semibold">Registrar</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+  <!-- Page Title Header -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div>
+      <div class="flex items-center gap-3">
+        <h1 class="font-headline-xl text-headline-xl text-primary font-bold tracking-tight">Registrar Mantenimiento</h1>
+        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-label-sm font-semibold bg-surface-container text-primary border border-outline-variant/70 uppercase">
+          PROTOCOLO TALLER V3.2
+        </span>
+      </div>
+      <p class="font-body-md text-body-md text-on-surface-variant mt-1">Ingrese los detalles técnicos y programáticos de la orden de trabajo</p>
+    </div>
+  </div>
+
+  <!-- Telemetry Info Callout Banner -->
+  <div class="p-4 rounded-xl bg-surface-container-low border border-surface-variant flex items-start gap-3.5 shadow-sm">
+    <div class="p-2 rounded-lg bg-surface-container-highest text-primary mt-0.5">
+      <span class="material-symbols-outlined text-[20px]">verified</span>
+    </div>
+    <div class="flex-1">
+      <div class="font-label-md text-label-md font-semibold text-primary">Validación de odómetro y telemetría activa</div>
+      <p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+        Los mantenimientos registrados actualizan automáticamente el estado operativo y el plan preventivo de la unidad en la flota.
+      </p>
+    </div>
+  </div>
+
+  <!-- FORM CARD: FICHA DE REGISTRO -->
+  <div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+    <!-- Card Header -->
+    <div class="px-6 py-4 bg-surface-container-low/40 border-b border-outline-variant/60 flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <span class="material-symbols-outlined text-[22px] text-primary">engineering</span>
+        <h2 class="font-headline-sm text-headline-sm font-semibold text-primary">Ficha de Registro de Mantenimiento de Flota</h2>
+      </div>
+      <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-error-container/40 border border-error/20 text-on-error-container font-label-sm text-[11px] font-bold">
+        <span class="text-error font-bold">*</span> CAMPOS OBLIGATORIOS
+      </div>
+    </div>
+
+    <!-- Card Body Form -->
+    <form method="POST" action="{% url 'mantenimiento_crear' %}" class="p-6 md:p-8 space-y-6">
+      {% csrf_token %}
+
+      {% if form.errors %}
+      <div class="p-4 rounded-xl bg-error-container/30 border border-error/30 text-on-error-container text-body-sm">
+        <div class="flex items-center gap-2 font-bold mb-1">
+          <span class="material-symbols-outlined text-error">error</span>
+          <span>Por favor corrija los siguientes errores:</span>
+        </div>
+        <ul class="list-disc pl-7 space-y-1">
+          {% for field in form %}
+            {% for error in field.errors %}
+              <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+            {% endfor %}
+          {% endfor %}
+          {% for error in form.non_field_errors %}
+            <li>{{ error }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+
+      <!-- 1. VEHÍCULO SELECTION -->
+      <div class="space-y-2">
+        <div class="flex items-center justify-between">
+          <label class="font-label-md text-label-md font-semibold text-on-surface flex items-center gap-1" for="vehiculo">
+            Vehículo <span class="text-error font-bold">*</span>
+          </label>
+          <span class="font-body-sm text-[11px] text-on-surface-variant flex items-center gap-1">
+            <span class="material-symbols-outlined text-[14px] text-emerald-600">sync</span> Flota Registrada
+          </span>
+        </div>
+        <div class="relative">
+          <select name="vehiculo" id="vehiculo" required class="w-full py-2.5 pl-3 pr-10 rounded-lg border border-outline-variant bg-surface-container-lowest font-body-md text-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary cursor-pointer shadow-sm">
+            <option value="" disabled selected>Seleccione un vehículo de la flota...</option>
+            {% for v in vehiculos %}
+              <option value="{{ v.id }}">{{ v.placa }} — {{ v.marca }} {{ v.modelo }} ({{ v.tipo_vehiculo }} - {{ v.estado }})</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <!-- 2. TIPO DE MANTENIMIENTO -->
+      <div class="space-y-2">
+        <label class="font-label-md text-label-md font-semibold text-on-surface flex items-center gap-1" for="tipo_mantenimiento">
+          Tipo de mantenimiento <span class="text-error font-bold">*</span>
+        </label>
+        <div class="relative">
+          <select name="tipo_mantenimiento" id="tipo_mantenimiento" required class="w-full py-2.5 pl-3 pr-10 rounded-lg border border-outline-variant bg-surface-container-lowest font-body-md text-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary cursor-pointer shadow-sm">
+            <option value="Preventivo" selected>Preventivo — Programado por kilometraje acumulado o ciclo periódico</option>
+            <option value="Correctivo">Correctivo — Reparación por avería mecánica o reporte en ruta</option>
+            <option value="Predictivo">Predictivo — Activado por telemetría avanzada y sensores</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 3. DESCRIPCIÓN TÉCNICA -->
+      <div class="space-y-2">
+        <label class="font-label-md text-label-md font-semibold text-on-surface flex items-center gap-1" for="descripcion">
+          Descripción del trabajo <span class="text-error font-bold">*</span>
+        </label>
+        <textarea name="descripcion" id="descripcion" required rows="3" placeholder="Detalle las tareas a realizar, repuestos a sustituir y especificaciones técnicas..." class="w-full rounded-lg border border-outline-variant bg-surface-container-lowest p-3.5 font-body-md text-body-md text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-outline"></textarea>
+      </div>
+
+      <!-- ROW: FECHA, COSTO, ESTADO -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
+        <!-- 4. FECHA DEL MANTENIMIENTO -->
+        <div class="space-y-2">
+          <label class="font-label-md text-label-md font-semibold text-on-surface flex items-center gap-1" for="fecha_programada">
+            Fecha programada <span class="text-error font-bold">*</span>
+          </label>
+          <input name="fecha_programada" id="fecha_programada" type="date" required class="w-full px-3 py-2.5 rounded-lg border border-outline-variant bg-surface-container-lowest font-body-md text-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary" />
+        </div>
+
+        <!-- 5. COSTO ESTIMADO -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="font-label-md text-label-md font-semibold text-on-surface flex items-center gap-1" for="costo">
+              Costo estimado <span class="text-error font-bold">*</span>
+            </label>
+            <span class="font-label-sm text-[10px] px-1.5 py-0.5 rounded bg-surface-container-low text-primary font-bold border border-outline-variant/60">
+              COP
+            </span>
+          </div>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none font-bold text-on-surface-variant">
+              $
+            </div>
+            <input name="costo" id="costo" type="number" step="0.01" min="0" required placeholder="0.00" class="w-full pl-8 pr-12 py-2.5 rounded-lg border border-outline-variant bg-surface-container-lowest font-body-md text-body-md font-semibold text-on-surface focus:border-primary focus:ring-1 focus:ring-primary font-tabular-data" />
+            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-body-sm text-outline">
+              COP
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. ESTADO DEL MANTENIMIENTO -->
+        <div class="space-y-2">
+          <label class="font-label-md text-label-md font-semibold text-on-surface flex items-center gap-1" for="estado">
+            Estado de la orden <span class="text-error font-bold">*</span>
+          </label>
+          <select name="estado" id="estado" class="w-full py-2.5 pl-3 pr-10 rounded-lg border border-outline-variant bg-surface-container-lowest font-body-md text-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary cursor-pointer">
+            <option value="Programado" selected>Programado (Turno confirmado)</option>
+            <option value="En Proceso">En Proceso (En bahía de taller)</option>
+            <option value="Finalizado">Finalizado (Prueba superada)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- COMPLEMENTARY OPERATIONAL FIELDS -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2 border-t border-outline-variant/60">
+        <!-- Taller o Proveedor Asignado -->
+        <div class="space-y-1.5">
+          <label class="font-label-md text-label-md font-semibold text-on-surface" for="taller">
+            Taller o Proveedor Asignado <span class="text-error font-bold">*</span>
+          </label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-on-surface-variant">
+              <span class="material-symbols-outlined text-[18px]">warehouse</span>
+            </div>
+            <input name="taller_responsable" id="taller" type="text" required placeholder="Ej. Taller Central LogiCarga - Fontibón (Bogotá D.C.)" class="w-full pl-10 pr-3 py-2.5 rounded-lg border border-outline-variant bg-surface-container-lowest font-body-md text-body-md text-on-surface focus:border-primary" />
+          </div>
+        </div>
+
+        <!-- Fecha Realizada (Opcional) -->
+        <div class="space-y-1.5">
+          <label class="font-label-md text-label-md font-semibold text-on-surface" for="fecha_realizada">
+            Fecha Realizada (si ya finalizó)
+          </label>
+          <input name="fecha_realizada" id="fecha_realizada" type="date" class="w-full px-3 py-2.5 rounded-lg border border-outline-variant bg-surface-container-lowest font-body-md text-body-md text-on-surface focus:border-primary" />
+        </div>
+      </div>
+
+      <!-- AUDIT & ACTION BUTTONS FOOTER -->
+      <div class="pt-6 border-t border-outline-variant flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-2 text-on-surface-variant">
+          <span class="material-symbols-outlined text-[18px] text-outline">info</span>
+          <span class="font-body-sm text-[12px]">
+            Al registrar el mantenimiento se creará la orden técnica oficial y se actualizará el historial del vehículo.
+          </span>
+        </div>
+        <div class="flex items-center gap-3 w-full md:w-auto justify-end">
+          <a href="{% url 'mantenimiento_lista' %}" class="px-5 py-2.5 rounded-lg border border-outline-variant bg-surface-container-lowest text-on-surface hover:bg-surface-container-low font-label-md text-label-md font-semibold transition-colors duration-150">
+            Cancelar
+          </a>
+          <button type="submit" class="flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md font-semibold shadow-sm transition-all duration-150 active:scale-[0.98]">
+            <span class="material-symbols-outlined text-[18px]">check_circle</span>
+            <span>Guardar Mantenimiento</span>
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,304 @@
+{% extends "base.html" %}
+
+{% block title %}LogiCarga - Registrar Viaje{% endblock %}
+
+{% block header_title %}Registrar Viaje{% endblock %}
+{% block header_subtitle %}Crear una nueva operación de transporte, asignar unidad móvil, conductor y telemetría de ruta{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+  <!-- Botón Volver -->
+  <div class="flex items-center">
+    <a class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-lg border border-outline-variant text-on-surface-variant hover:text-primary hover:bg-surface-container text-body-sm font-medium transition-colors" href="{% url 'viajes_lista' %}">
+      <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+      <span>Volver a Viajes</span>
+    </a>
+  </div>
+
+  <!-- Form Errors Display -->
+  {% if form.errors %}
+  <div class="p-4 rounded-xl bg-error-container/40 border border-error/40 text-error space-y-1 shadow-xs">
+    <div class="flex items-center gap-2 font-bold font-headline-sm text-headline-sm">
+      <span class="material-symbols-outlined text-[20px]">error</span>
+      <span>Por favor revise los errores antes de continuar:</span>
+    </div>
+    <ul class="list-disc list-inside text-body-sm space-y-0.5 pl-6">
+      {% for field in form %}
+        {% for error in field.errors %}
+          <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+        {% endfor %}
+      {% endfor %}
+      {% for error in form.non_field_errors %}
+        <li>{{ error }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  <form class="space-y-8" method="POST" action="">
+    {% csrf_token %}
+    <!-- SECCIÓN 1: INFORMACIÓN GENERAL -->
+    <section class="bg-surface-container-lowest border border-outline-variant/40 rounded-xl shadow-xs overflow-hidden">
+      <div class="p-6 border-b border-outline-variant/30 bg-surface-bright flex items-start gap-4">
+        <div class="w-11 h-11 rounded-lg bg-surface-container-low text-primary flex items-center justify-center shrink-0 border border-outline-variant/40">
+          <span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">local_shipping</span>
+        </div>
+        <div>
+          <div class="flex items-center gap-3">
+            <h2 class="font-headline-md text-headline-md font-bold text-primary">SECCIÓN 1: Información General</h2>
+            <span class="px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 font-label-sm text-label-sm uppercase tracking-wider font-semibold">REQUERIDO</span>
+          </div>
+          <p class="font-body-md text-body-md text-on-surface-variant mt-0.5">Datos de la ruta, asignación de unidad y carga programada para la jornada logística.</p>
+        </div>
+      </div>
+
+      <div class="p-6 md:p-8 space-y-6">
+        <!-- Grid: Vehículo y Conductor -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- 1. Vehículo Selector -->
+          <div class="flex flex-col gap-2">
+            <label class="flex items-center justify-between font-label-lg text-label-lg font-semibold text-primary" for="vehiculo-select">
+              <span class="flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[18px]">local_shipping</span>
+                <span>Vehículo <span class="text-error font-bold">*</span></span>
+              </span>
+              <span class="font-label-sm text-label-sm text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">Flota LogiCarga</span>
+            </label>
+            <div class="relative">
+              <select name="vehiculo" class="w-full h-11 pl-4 pr-10 rounded-lg bg-surface-container-lowest border border-outline-variant text-on-surface font-body-md text-body-md focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-all appearance-none cursor-pointer" id="vehiculo-select" required>
+                <option value="" disabled {% if not form.vehiculo.value %}selected{% endif %}>Seleccione un vehículo</option>
+                {% for v in vehiculos %}
+                <option value="{{ v.id }}" {% if form.vehiculo.value|stringformat:"s" == v.id|stringformat:"s" %}selected{% endif %}>
+                  {{ v.placa }} — {{ v.modelo }} (Capacidad: {{ v.capacidad_carga }} kg - Estado: {{ v.estado }})
+                </option>
+                {% endfor %}
+              </select>
+              <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-on-surface-variant">
+                <span class="material-symbols-outlined">expand_more</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Conductor Selector -->
+          <div class="flex flex-col gap-2">
+            <label class="flex items-center justify-between font-label-lg text-label-lg font-semibold text-primary" for="conductor-select">
+              <span class="flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[18px]">badge</span>
+                <span>Conductor Asignado <span class="text-error font-bold">*</span></span>
+              </span>
+              <span class="font-label-sm text-label-sm text-primary bg-surface-container px-2 py-0.5 rounded-md border border-outline-variant">Licencia Activa</span>
+            </label>
+            <div class="relative">
+              <select name="conductor" class="w-full h-11 pl-4 pr-10 rounded-lg bg-surface-container-lowest border border-outline-variant text-on-surface font-body-md text-body-md focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-all appearance-none cursor-pointer" id="conductor-select" required>
+                <option value="" disabled {% if not form.conductor.value %}selected{% endif %}>Seleccione un conductor</option>
+                {% for c in conductores %}
+                <option value="{{ c.id }}" {% if form.conductor.value|stringformat:"s" == c.id|stringformat:"s" %}selected{% endif %}>
+                  {{ c.nombre_completo }} ({{ c.numero_licencia }})
+                </option>
+                {% endfor %}
+              </select>
+              <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-on-surface-variant">
+                <span class="material-symbols-outlined">expand_more</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="h-px bg-outline-variant/30"></div>
+
+        <!-- Grid: Ciudades Origen y Destino -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- 3. Ciudad de Origen -->
+          <div class="flex flex-col gap-2">
+            <label class="font-label-lg text-label-lg font-semibold text-primary flex items-center gap-1.5" for="origen-input">
+              <span class="material-symbols-outlined text-[18px] text-primary">trip_origin</span>
+              <span>Ciudad de Origen <span class="text-error font-bold">*</span></span>
+            </label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-on-surface-variant">
+                <span class="material-symbols-outlined text-[20px]">pin_drop</span>
+              </div>
+              <input name="ciudad_origen" class="w-full h-11 pl-10 pr-4 rounded-lg bg-surface-container-lowest border border-outline-variant text-on-surface font-body-md text-body-md focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-all placeholder:text-on-surface-variant/60" id="origen-input" placeholder="Ej. Bogotá D.C." type="text" value="{{ form.ciudad_origen.value|default:'' }}" required/>
+            </div>
+          </div>
+
+          <!-- 4. Ciudad de Destino -->
+          <div class="flex flex-col gap-2">
+            <label class="font-label-lg text-label-lg font-semibold text-primary flex items-center gap-1.5" for="destino-input">
+              <span class="material-symbols-outlined text-[18px] text-error">location_on</span>
+              <span>Ciudad de Destino <span class="text-error font-bold">*</span></span>
+            </label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-on-surface-variant">
+                <span class="material-symbols-outlined text-[20px]">navigation</span>
+              </div>
+              <input name="ciudad_destino" class="w-full h-11 pl-10 pr-4 rounded-lg bg-surface-container-lowest border border-outline-variant text-on-surface font-body-md text-body-md focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-all placeholder:text-on-surface-variant/60" id="destino-input" placeholder="Ej. Medellín" type="text" value="{{ form.ciudad_destino.value|default:'' }}" required/>
+            </div>
+          </div>
+        </div>
+
+        <div class="h-px bg-outline-variant/30"></div>
+
+        <!-- Grid: Fecha/Hora Salida, Fecha/Hora Llegada & Tipo de Carga -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <!-- 5. Fecha y Hora de Salida -->
+          <div class="flex flex-col gap-2">
+            <label class="font-label-lg text-label-lg font-semibold text-primary flex items-center gap-1.5" for="fecha-salida">
+              <span class="material-symbols-outlined text-[18px] text-on-surface-variant">schedule</span>
+              <span>Fecha y Hora de Salida <span class="text-error font-bold">*</span></span>
+            </label>
+            <div class="relative">
+              <input name="fecha_hora_salida" class="w-full h-11 px-3 rounded-lg bg-surface-container-lowest border border-outline-variant text-on-surface font-tabular-data text-tabular-data focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-all" id="fecha-salida" type="datetime-local" value="{{ form.fecha_hora_salida.value|default:'' }}" required/>
+            </div>
+            <span class="font-body-sm text-body-sm text-on-surface-variant">Fecha programada de inicio</span>
+          </div>
+
+          <!-- 6. Fecha y Hora de Llegada Estimada -->
+          <div class="flex flex-col gap-2">
+            <label class="font-label-lg text-label-lg font-semibold text-primary flex items-center gap-1.5" for="fecha-llegada">
+              <span class="material-symbols-outlined text-[18px] text-on-surface-variant">event_upcoming</span>
+              <span>Fecha y Hora de Llegada (Est.)</span>
+            </label>
+            <div class="relative">
+              <input name="fecha_hora_llegada" class="w-full h-11 px-3 rounded-lg bg-surface-container-lowest border border-outline-variant text-on-surface font-tabular-data text-tabular-data focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-all" id="fecha-llegada" type="datetime-local" value="{{ form.fecha_hora_llegada.value|default:'' }}"/>
+            </div>
+            <span class="font-body-sm text-body-sm text-on-surface-variant">Opcional al programar</span>
+          </div>
+
+          <!-- 7. Tipo de Carga -->
+          <div class="flex flex-col gap-2">
+            <label class="font-label-lg text-label-lg font-semibold text-primary flex items-center gap-1.5" for="tipo-carga">
+              <span class="material-symbols-outlined text-[18px] text-on-surface-variant">inventory_2</span>
+              <span>Tipo de Carga <span class="text-error font-bold">*</span></span>
+            </label>
+            <div class="relative">
+              <input name="tipo_carga" class="w-full h-11 pl-3 pr-4 rounded-lg bg-surface-container-lowest border border-outline-variant text-on-surface font-body-md text-body-md focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-all" id="tipo-carga" placeholder="Ej. Carga General Seca" type="text" value="{{ form.tipo_carga.value|default:'Carga General Seca' }}" required/>
+            </div>
+            <span class="font-body-sm text-body-sm text-on-surface-variant">Descripción del flete</span>
+          </div>
+        </div>
+
+        <!-- 8. Estado inicial del viaje -->
+        <div class="flex flex-col gap-2 pt-2">
+          <label class="font-label-lg text-label-lg font-semibold text-primary">Estado del Viaje</label>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <label class="p-3 rounded-lg border border-outline-variant/60 flex items-center gap-2 cursor-pointer hover:bg-surface-container-low transition-colors">
+              <input type="radio" name="estado" value="Programado" {% if form.estado.value == 'Programado' or not form.estado.value %}checked{% endif %} class="text-secondary focus:ring-secondary">
+              <span class="font-label-md text-label-md font-semibold text-primary">Programado</span>
+            </label>
+            <label class="p-3 rounded-lg border border-outline-variant/60 flex items-center gap-2 cursor-pointer hover:bg-surface-container-low transition-colors">
+              <input type="radio" name="estado" value="En curso" {% if form.estado.value == 'En curso' %}checked{% endif %} class="text-secondary focus:ring-secondary">
+              <span class="font-label-md text-label-md font-semibold text-primary">En curso (Inmediato)</span>
+            </label>
+            <label class="p-3 rounded-lg border border-outline-variant/60 flex items-center gap-2 cursor-pointer hover:bg-surface-container-low transition-colors">
+              <input type="radio" name="estado" value="Finalizado" {% if form.estado.value == 'Finalizado' %}checked{% endif %} class="text-secondary focus:ring-secondary">
+              <span class="font-label-md text-label-md font-semibold text-primary">Finalizado</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECCIÓN 2: INFORMACIÓN OPERACIONAL (TELEMETRÍA & COMBUSTIBLE) -->
+    <section class="bg-surface-container-lowest border border-outline-variant/40 rounded-xl shadow-xs overflow-hidden">
+      <div class="p-6 border-b border-outline-variant/30 bg-surface-bright flex items-start gap-4">
+        <div class="w-11 h-11 rounded-lg bg-surface-container-low text-primary flex items-center justify-center shrink-0 border border-outline-variant/40">
+          <span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">speed</span>
+        </div>
+        <div>
+          <div class="flex items-center gap-3">
+            <h2 class="font-headline-md text-headline-md font-bold text-primary">SECCIÓN 2: Información Operacional</h2>
+            <span class="px-2.5 py-0.5 rounded-full bg-blue-50 border border-blue-200 text-blue-800 font-label-sm text-label-sm uppercase tracking-wider font-semibold">TELEMETRÍA GPS</span>
+          </div>
+          <p class="font-body-md text-body-md text-on-surface-variant mt-0.5">Métricas de odómetro y combustible inicial y proyectado.</p>
+        </div>
+      </div>
+
+      <div class="p-6 md:p-8 space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- 1. Kilometraje Inicial -->
+          <div class="p-5 rounded-xl bg-surface-container-low border border-outline-variant/40 flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-3">
+              <label class="font-label-lg text-label-lg font-semibold text-primary flex items-center gap-2" for="km-inicial">
+                <span class="material-symbols-outlined text-primary">pin</span>
+                <span>Kilometraje Inicial <span class="text-error font-bold">*</span></span>
+              </label>
+              <span class="font-label-sm text-label-sm px-2 py-0.5 rounded bg-surface-container text-on-surface-variant border border-outline-variant">Odómetro</span>
+            </div>
+            <div class="relative">
+              <input name="kilometraje_inicial" class="w-full h-11 pl-4 pr-14 rounded-lg bg-surface-container-lowest border border-outline-variant text-primary font-tabular-data text-[16px] font-bold focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-all" id="km-inicial" type="number" min="0" value="{{ form.kilometraje_inicial.value|default:'0' }}" required/>
+              <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                <span class="font-label-md text-label-md font-bold text-outline">km</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Kilometraje Final Estimado -->
+          <div class="p-5 rounded-xl bg-surface-container-low border border-outline-variant/40 flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-3">
+              <label class="font-label-lg text-label-lg font-semibold text-primary flex items-center gap-2" for="km-final">
+                <span class="material-symbols-outlined text-primary">flag</span>
+                <span>Kilometraje Final</span>
+              </label>
+              <span class="font-label-sm text-label-sm px-2 py-0.5 rounded bg-surface-container text-on-surface-variant border border-outline-variant">Requerido al finalizar</span>
+            </div>
+            <div class="relative">
+              <input name="kilometraje_final" class="w-full h-11 pl-4 pr-14 rounded-lg bg-surface-container-lowest border border-outline-variant text-primary font-tabular-data text-[16px] font-bold focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-all" id="km-final" type="number" min="0" value="{{ form.kilometraje_final.value|default:'' }}"/>
+              <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                <span class="font-label-md text-label-md font-bold text-outline">km</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. Nivel de Combustible Inicial -->
+          <div class="p-5 rounded-xl bg-surface-container-low border border-outline-variant/40 flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-3">
+              <label class="font-label-lg text-label-lg font-semibold text-primary flex items-center gap-2" for="combustible-inicial">
+                <span class="material-symbols-outlined text-emerald-700">local_gas_station</span>
+                <span>Combustible Inicial</span>
+              </label>
+              <span class="font-label-sm text-label-sm px-2 py-0.5 rounded bg-surface-container text-on-surface-variant border border-outline-variant">Litros</span>
+            </div>
+            <div class="relative">
+              <input name="combustible_inicial" class="w-full h-11 pl-4 pr-14 rounded-lg bg-surface-container-lowest border border-outline-variant text-primary font-tabular-data text-[16px] font-bold focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-all" id="combustible-inicial" type="number" step="0.01" min="0" value="{{ form.combustible_inicial.value|default:'' }}"/>
+              <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none font-bold text-outline">L</div>
+            </div>
+          </div>
+
+          <!-- 4. Nivel de Combustible Final -->
+          <div class="p-5 rounded-xl bg-surface-container-low border border-outline-variant/40 flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-3">
+              <label class="font-label-lg text-label-lg font-semibold text-primary flex items-center gap-2" for="combustible-final">
+                <span class="material-symbols-outlined text-amber-700">oil_barrel</span>
+                <span>Combustible Final</span>
+              </label>
+              <span class="font-label-sm text-label-sm px-2 py-0.5 rounded bg-surface-container text-on-surface-variant border border-outline-variant">Litros</span>
+            </div>
+            <div class="relative">
+              <input name="combustible_final" class="w-full h-11 pl-4 pr-14 rounded-lg bg-surface-container-lowest border border-outline-variant text-primary font-tabular-data text-[16px] font-bold focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-all" id="combustible-final" type="number" step="0.01" min="0" value="{{ form.combustible_final.value|default:'' }}"/>
+              <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none font-bold text-outline">L</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ACTION TOOLBAR -->
+    <div class="p-4 bg-surface-container-lowest border border-outline-variant/40 rounded-xl shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-2 text-body-sm text-on-surface-variant">
+        <span class="material-symbols-outlined text-[18px]">verified</span>
+        <span>Validación automática de restricciones de ruta y despacho activo.</span>
+      </div>
+      <div class="flex items-center gap-3 w-full sm:w-auto">
+        <a href="{% url 'viajes_lista' %}" class="w-full sm:w-auto px-5 h-10 rounded-lg border border-outline-variant bg-surface-container-lowest text-primary font-label-md text-label-md font-semibold hover:bg-surface-container transition-colors inline-flex items-center justify-center">
+          Cancelar
+        </a>
+        <button class="w-full sm:w-auto px-6 h-10 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-label-lg text-label-lg font-semibold inline-flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer" type="submit">
+          <span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">save</span>
+          <span>Guardar Viaje</span>
+        </button>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}

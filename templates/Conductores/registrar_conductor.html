@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block title %}LogiCarga - Registrar Conductor{% endblock %}
+
+{% block header_title %}Registrar Conductor{% endblock %}
+{% block header_subtitle %}Alta de nuevo personal operativo y registro de licencias de conducción{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+  <!-- Botón Volver -->
+  <div class="flex items-center">
+    <a class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-lg border border-outline-variant text-on-surface-variant hover:text-primary hover:bg-surface-container text-body-sm font-medium transition-colors" href="{% url 'conductores_lista' %}">
+      <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+      <span>Volver a Conductores</span>
+    </a>
+  </div>
+
+  <!-- Form Errors Display -->
+  {% if form.errors %}
+  <div class="p-4 rounded-xl bg-error-container/40 border border-error/40 text-error space-y-1 shadow-xs">
+    <div class="flex items-center gap-2 font-bold font-headline-sm text-headline-sm">
+      <span class="material-symbols-outlined text-[20px]">error</span>
+      <span>Por favor revise los errores antes de continuar:</span>
+    </div>
+    <ul class="list-disc list-inside text-body-sm space-y-0.5 pl-6">
+      {% for field in form %}
+        {% for error in field.errors %}
+          <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+        {% endfor %}
+      {% endfor %}
+      {% for error in form.non_field_errors %}
+        <li>{{ error }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  <!-- Card: Ficha de Alta de Conductor -->
+  <div class="bg-surface-container-lowest border border-outline-variant/40 rounded-xl shadow-xs overflow-hidden">
+    <!-- Card Header -->
+    <div class="px-8 py-5 border-b border-outline-variant/30 bg-surface-bright flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-lg bg-surface-container-low border border-secondary-fixed flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined text-[22px]">person_add</span>
+        </div>
+        <div>
+          <h2 class="font-headline-sm text-headline-sm font-bold text-primary">Ficha de Alta de Conductor</h2>
+          <p class="font-body-sm text-body-sm text-on-surface-variant">Registre las credenciales operativas para asignación de tractocamiones y rutas nacionales.</p>
+        </div>
+      </div>
+      <span class="font-label-sm text-label-sm text-on-surface-variant">
+        <span class="text-error font-bold">*</span> Campos obligatorios
+      </span>
+    </div>
+
+    <!-- Form Body -->
+    <form class="p-8 space-y-6" method="POST" action="">
+      {% csrf_token %}
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Campo 1: Nombre Completo -->
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label class="font-label-md text-label-md font-semibold text-primary" for="nombre_completo">
+              Nombre completo <span class="text-error font-bold">*</span>
+            </label>
+          </div>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-on-surface-variant">
+              <span class="material-symbols-outlined text-[18px]">badge</span>
+            </span>
+            <input class="w-full h-10 pl-10 pr-4 rounded-lg bg-white border border-outline-variant font-body-md text-body-md text-primary focus:ring-2 focus:ring-secondary/20 focus:border-secondary outline-none transition-all shadow-xs" id="nombre_completo" name="nombre_completo" placeholder="Nombre y apellidos del conductor" required="" type="text" value="{{ form.nombre_completo.value|default:'' }}"/>
+          </div>
+          <p class="font-body-sm text-body-sm text-on-surface-variant text-[11px]">Nombres y apellidos completos</p>
+        </div>
+
+        <!-- Campo 2: Número de Licencia -->
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label class="font-label-md text-label-md font-semibold text-primary" for="numero_licencia">
+              Número de Licencia <span class="text-error font-bold">*</span>
+            </label>
+            <span class="font-label-sm text-label-sm text-secondary font-semibold">Categoría C2 / C3</span>
+          </div>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-on-surface-variant">
+              <span class="material-symbols-outlined text-[18px]">credit_card</span>
+            </span>
+            <input class="w-full h-10 pl-10 pr-4 rounded-lg bg-white border border-outline-variant font-tabular-data text-tabular-data text-primary uppercase focus:ring-2 focus:ring-secondary/20 focus:border-secondary outline-none transition-all shadow-xs" id="numero_licencia" name="numero_licencia" placeholder="Ej. LIC-9482014-C3" required="" type="text" value="{{ form.numero_licencia.value|default:'' }}"/>
+          </div>
+          <p class="font-body-sm text-body-sm text-on-surface-variant text-[11px]">Número oficial de licencia de conducción</p>
+        </div>
+
+        <!-- Campo 3: Teléfono -->
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label class="font-label-md text-label-md font-semibold text-primary" for="telefono">
+              Teléfono de Contacto <span class="text-error font-bold">*</span>
+            </label>
+          </div>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-on-surface-variant">
+              <span class="material-symbols-outlined text-[18px]">phone</span>
+            </span>
+            <input class="w-full h-10 pl-10 pr-4 rounded-lg bg-white border border-outline-variant font-tabular-data text-tabular-data text-primary focus:ring-2 focus:ring-secondary/20 focus:border-secondary outline-none transition-all shadow-xs" id="telefono" name="telefono" placeholder="+57 300 000 0000" required="" type="tel" value="{{ form.telefono.value|default:'' }}"/>
+          </div>
+          <p class="font-body-sm text-body-sm text-on-surface-variant text-[11px]">Número celular con WhatsApp activo</p>
+        </div>
+
+        <!-- Campo 4: Correo Electrónico -->
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label class="font-label-md text-label-md font-semibold text-primary" for="correo">
+              Correo Electrónico <span class="text-error font-bold">*</span>
+            </label>
+          </div>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-on-surface-variant">
+              <span class="material-symbols-outlined text-[18px]">mail</span>
+            </span>
+            <input class="w-full h-10 pl-10 pr-4 rounded-lg bg-white border border-outline-variant font-body-md text-body-md text-primary focus:ring-2 focus:ring-secondary/20 focus:border-secondary outline-none transition-all shadow-xs" id="correo" name="correo" placeholder="conductor@logicarga.com" required="" type="email" value="{{ form.correo.value|default:'' }}"/>
+          </div>
+          <p class="font-body-sm text-body-sm text-on-surface-variant text-[11px]">Para notificaciones de asignación de ruta</p>
+        </div>
+      </div>
+
+      <!-- Operational Notice -->
+      <div class="p-4 bg-surface-container-low rounded-lg border border-outline-variant/40 flex items-start gap-3">
+        <span class="material-symbols-outlined text-secondary text-[20px] mt-0.5">verified_user</span>
+        <div class="flex-1 text-body-sm font-body-sm text-on-surface">
+          <span class="font-semibold text-primary">Validación de nómina:</span> Al registrar el conductor, sus credenciales quedarán disponibles inmediatamente en el sistema de asignación de viajes de <span class="font-medium">LogiCarga Transportes S.A.</span>
+        </div>
+      </div>
+
+      <!-- Botones de Acción al Pie -->
+      <div class="pt-5 border-t border-outline-variant/30 flex items-center justify-end gap-3">
+        <a class="h-10 px-5 rounded-lg border border-outline-variant bg-surface-container-lowest text-primary font-label-md text-label-md font-semibold hover:bg-surface-container transition-colors inline-flex items-center justify-center" href="{% url 'conductores_lista' %}">
+          Cancelar
+        </a>
+        <button class="h-10 px-6 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-label-lg text-label-lg font-semibold inline-flex items-center gap-2 shadow-xs transition-colors cursor-pointer" type="submit">
+          <span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">save</span>
+          <span>Guardar Conductor</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

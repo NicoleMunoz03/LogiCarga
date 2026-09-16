@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+
+{% block title %}LogiCarga - Expediente Conductor: {{ conductor.nombre_completo }}{% endblock %}
+
+{% block header_title %}Información del Conductor{% endblock %}
+{% block header_subtitle %}Consulta detallada de la ficha técnica, licencia y registro de viajes del conductor{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+  <!-- BARRA SUPERIOR DE CONTEXTO Y ACCIONES -->
+  <div class="bg-surface-container-lowest rounded-xl border border-outline-variant/40 p-4 shadow-xs flex flex-wrap items-center justify-between gap-4">
+    <div class="flex items-center gap-4">
+      <a href="{% url 'conductores_lista' %}" class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg border border-outline-variant text-primary font-label-md text-label-md bg-surface-container-lowest hover:bg-surface-container transition-colors shadow-xs">
+        <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+        <span>Volver a Conductores</span>
+      </a>
+      <div class="h-6 w-px bg-outline-variant/40"></div>
+      <div class="flex items-center gap-2">
+        <div class="inline-flex items-center gap-1.5 h-7 px-3 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800">
+          <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+          <span class="font-label-sm text-label-sm font-bold uppercase tracking-wider">Estado: Activo</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECCIÓN 1: FICHA CORPORATIVA DEL CONDUCTOR -->
+  <section class="bg-surface-container-lowest rounded-xl border border-outline-variant/40 shadow-xs overflow-hidden">
+    <div class="px-6 py-4 border-b border-outline-variant/30 bg-surface-bright flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <span class="material-symbols-outlined text-primary text-[22px]">badge</span>
+        <h2 class="font-headline-sm text-headline-sm text-primary font-bold">Datos Personales y Licencia</h2>
+      </div>
+      <span class="font-label-md text-label-md text-on-surface-variant font-tabular-data">Expediente ID: #CND-{{ conductor.id|stringformat:"04d" }}</span>
+    </div>
+    
+    <div class="p-6">
+      <div class="flex flex-col lg:flex-row gap-6 items-start">
+        <!-- Tarjeta Identidad -->
+        <div class="w-full lg:w-1/3 flex flex-col items-center lg:items-start p-5 bg-surface-container-low rounded-xl border border-outline-variant/40 text-center lg:text-left">
+          <div class="flex items-center gap-4 w-full">
+            <div class="w-16 h-16 rounded-xl bg-primary text-on-primary flex items-center justify-center font-display-lg text-[28px] font-bold shadow-xs">
+              {{ conductor.nombre_completo|slice:":2"|upper }}
+            </div>
+            <div>
+              <h3 class="font-headline-md text-headline-md font-bold text-primary leading-snug">{{ conductor.nombre_completo }}</h3>
+              <p class="font-body-sm text-body-sm text-secondary font-medium">Conductor Titular</p>
+              <p class="font-tabular-data text-tabular-data text-on-surface-variant text-xs mt-0.5">ID: CND-{{ conductor.id|stringformat:"04d" }}</p>
+            </div>
+          </div>
+          <div class="flex flex-wrap gap-2 mt-4 pt-4 border-t border-outline-variant/40 w-full">
+            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-label-sm font-label-sm uppercase bg-emerald-50 text-emerald-800 border border-emerald-200">
+              <span class="material-symbols-outlined text-xs">verified</span>
+              Licencia Vigente
+            </span>
+            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-label-sm font-label-sm uppercase bg-blue-50 text-blue-800 border border-blue-200">
+              <span class="material-symbols-outlined text-xs">check_circle</span>
+              Aprobado RUNT
+            </span>
+          </div>
+        </div>
+
+        <!-- Grid de Datos -->
+        <div class="w-full lg:w-2/3 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="p-4 rounded-xl bg-surface-container-lowest border border-outline-variant/40 flex items-start gap-3">
+            <div class="w-9 h-9 rounded-lg bg-surface-container-low flex items-center justify-center text-primary mt-0.5">
+              <span class="material-symbols-outlined text-[18px]">person</span>
+            </div>
+            <div>
+              <span class="font-label-sm text-label-sm uppercase text-on-surface-variant font-bold tracking-wider text-[11px]">Nombre Completo</span>
+              <p class="font-headline-sm text-headline-sm text-primary font-semibold mt-0.5">{{ conductor.nombre_completo }}</p>
+              <p class="font-body-sm text-body-sm text-on-surface-variant">Conductor LogiCarga</p>
+            </div>
+          </div>
+
+          <div class="p-4 rounded-xl bg-surface-container-lowest border border-outline-variant/40 flex items-start gap-3">
+            <div class="w-9 h-9 rounded-lg bg-surface-container-low flex items-center justify-center text-primary mt-0.5">
+              <span class="material-symbols-outlined text-[18px]">credit_card</span>
+            </div>
+            <div>
+              <span class="font-label-sm text-label-sm uppercase text-on-surface-variant font-bold tracking-wider text-[11px]">Número de Licencia</span>
+              <p class="font-tabular-data text-tabular-data text-primary font-bold text-base mt-0.5">{{ conductor.numero_licencia }}</p>
+              <p class="font-body-sm text-body-sm text-on-surface-variant">Licencia de Conducción Activa</p>
+            </div>
+          </div>
+
+          <div class="p-4 rounded-xl bg-surface-container-lowest border border-outline-variant/40 flex items-start gap-3">
+            <div class="w-9 h-9 rounded-lg bg-surface-container-low flex items-center justify-center text-primary mt-0.5">
+              <span class="material-symbols-outlined text-[18px]">phone</span>
+            </div>
+            <div>
+              <span class="font-label-sm text-label-sm uppercase text-on-surface-variant font-bold tracking-wider text-[11px]">Teléfono de Contacto</span>
+              <p class="font-tabular-data text-tabular-data text-primary font-bold text-base mt-0.5">{{ conductor.telefono }}</p>
+              <p class="font-body-sm text-body-sm text-emerald-700 font-medium">Móvil corporativo</p>
+            </div>
+          </div>
+
+          <div class="p-4 rounded-xl bg-surface-container-lowest border border-outline-variant/40 flex items-start gap-3">
+            <div class="w-9 h-9 rounded-lg bg-surface-container-low flex items-center justify-center text-primary mt-0.5">
+              <span class="material-symbols-outlined text-[18px]">mail</span>
+            </div>
+            <div>
+              <span class="font-label-sm text-label-sm uppercase text-on-surface-variant font-bold tracking-wider text-[11px]">Correo Electrónico</span>
+              <p class="font-tabular-data text-tabular-data text-primary font-semibold text-base mt-0.5">{{ conductor.correo }}</p>
+              <p class="font-body-sm text-body-sm text-on-surface-variant">Buzón corporativo</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tarjetas de Métricas Rápidas -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6 pt-6 border-t border-outline-variant/30">
+        <div class="p-4 rounded-xl bg-surface-container-low border border-outline-variant/40">
+          <div class="flex items-center justify-between">
+            <span class="font-label-sm text-label-sm uppercase text-on-surface-variant font-bold text-[11px]">Viajes Realizados</span>
+            <span class="material-symbols-outlined text-primary text-[20px]">local_shipping</span>
+          </div>
+          <div class="font-headline-xl text-headline-xl text-primary font-bold font-tabular-data mt-2">{{ viajes_relacionados.count }} <span class="text-sm font-normal text-on-surface-variant">viajes</span></div>
+          <p class="font-body-sm text-body-sm text-emerald-700 mt-1 flex items-center gap-1 font-medium">
+            <span class="material-symbols-outlined text-sm">trending_up</span> Total de despachos
+          </p>
+        </div>
+
+        <div class="p-4 rounded-xl bg-surface-container-low border border-outline-variant/40">
+          <div class="flex items-center justify-between">
+            <span class="font-label-sm text-label-sm uppercase text-on-surface-variant font-bold text-[11px]">Estado</span>
+            <span class="material-symbols-outlined text-primary text-[20px]">schedule</span>
+          </div>
+          <div class="font-headline-xl text-headline-xl text-primary font-bold mt-2">Activo</div>
+          <p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Disponibilidad en planta</p>
+        </div>
+
+        <div class="p-4 rounded-xl bg-surface-container-low border border-outline-variant/40">
+          <div class="flex items-center justify-between">
+            <span class="font-label-sm text-label-sm uppercase text-on-surface-variant font-bold text-[11px]">Seguridad Vial</span>
+            <span class="material-symbols-outlined text-primary text-[20px]">shield</span>
+          </div>
+          <div class="font-headline-xl text-headline-xl text-primary font-bold font-tabular-data mt-2">100<span class="text-sm font-normal text-on-surface-variant">/100</span></div>
+          <p class="font-body-sm text-body-sm text-emerald-700 mt-1 font-semibold flex items-center gap-1">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Calificación: Excelente
+          </p>
+        </div>
+
+        <div class="p-4 rounded-xl bg-surface-container-low border border-outline-variant/40">
+          <div class="flex items-center justify-between">
+            <span class="font-label-sm text-label-sm uppercase text-on-surface-variant font-bold text-[11px]">Vehículos Operados</span>
+            <span class="material-symbols-outlined text-primary text-[20px]">rv_hookup</span>
+          </div>
+          <div class="font-headline-sm text-headline-sm text-primary font-bold mt-2 truncate">Flota LogiCarga</div>
+          <div class="font-tabular-data text-tabular-data font-bold text-secondary mt-0.5 flex items-center gap-1.5">
+            <span class="px-2 py-0.5 rounded bg-surface border border-outline-variant text-primary text-xs">Asignado</span>
+            <span class="text-xs text-on-surface-variant font-normal">Operación Nacional</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECCIÓN 2: HISTORIAL DE VIAJES -->
+  <section class="bg-surface-container-lowest rounded-xl border border-outline-variant/40 shadow-xs overflow-hidden">
+    <div class="px-6 py-4 border-b border-outline-variant/30 bg-surface-bright flex items-center justify-between">
+      <div>
+        <h2 class="font-headline-sm text-headline-sm font-bold text-primary">Historial de Viajes</h2>
+        <p class="font-body-sm text-body-sm text-on-surface-variant">Registro cronológico de despachos y rutas realizadas por el conductor</p>
+      </div>
+      <span class="font-tabular-data text-tabular-data text-on-surface-variant">{{ viajes_relacionados.count }} viajes</span>
+    </div>
+    
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-surface-bright border-b border-outline-variant/30 h-10">
+            <th class="px-6 py-2.5 font-label-md text-label-md uppercase text-on-surface-variant font-bold tracking-wider text-[11px]">ID Viaje</th>
+            <th class="px-6 py-2.5 font-label-md text-label-md uppercase text-on-surface-variant font-bold tracking-wider text-[11px]">Vehículo Asignado</th>
+            <th class="px-6 py-2.5 font-label-md text-label-md uppercase text-on-surface-variant font-bold tracking-wider text-[11px]">Origen</th>
+            <th class="px-6 py-2.5 font-label-md text-label-md uppercase text-on-surface-variant font-bold tracking-wider text-[11px]">Destino</th>
+            <th class="px-6 py-2.5 font-label-md text-label-md uppercase text-on-surface-variant font-bold tracking-wider text-[11px]">Fecha de Salida</th>
+            <th class="px-6 py-2.5 font-label-md text-label-md uppercase text-on-surface-variant font-bold tracking-wider text-[11px]">Estado</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-outline-variant/20 font-body-md text-body-md">
+          {% for viaje in viajes_relacionados %}
+          <tr class="hover:bg-surface-container-low/60 transition-colors duration-150">
+            <td class="px-6 py-4 font-tabular-data font-bold text-primary">
+              <span class="px-2 py-1 bg-surface-container-low rounded border border-outline-variant/30 text-secondary font-semibold">VJ-{{ viaje.id|stringformat:"05d" }}</span>
+            </td>
+            <td class="px-6 py-4">
+              <div class="font-label-lg text-label-lg font-semibold text-primary">{{ viaje.vehiculo.modelo }}</div>
+              <div class="font-tabular-data text-tabular-data text-on-surface-variant">{{ viaje.vehiculo.placa }} • {{ viaje.vehiculo.capacidad_carga }} kg</div>
+            </td>
+            <td class="px-6 py-4 text-primary font-medium">{{ viaje.ciudad_origen }}</td>
+            <td class="px-6 py-4 text-primary font-medium">{{ viaje.ciudad_destino }}</td>
+            <td class="px-6 py-4 font-tabular-data text-on-surface-variant">
+              <div class="text-primary font-medium">{{ viaje.fecha_hora_salida|date:"d M Y" }}</div>
+              <div class="text-xs text-on-surface-variant">{{ viaje.fecha_hora_salida|date:"H:i" }} hrs</div>
+            </td>
+            <td class="px-6 py-4">
+              {% if viaje.estado == 'En curso' %}
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-label-sm font-label-sm uppercase bg-blue-50 border border-blue-200 text-blue-800 font-semibold">
+                <span class="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse"></span>
+                {{ viaje.estado }}
+              </span>
+              {% elif viaje.estado == 'Finalizado' %}
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-label-sm font-label-sm uppercase bg-emerald-50 border border-emerald-200 text-emerald-800 font-semibold">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                {{ viaje.estado }}
+              </span>
+              {% else %}
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-label-sm font-label-sm uppercase bg-amber-50 border border-amber-200 text-amber-800 font-semibold">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-600"></span>
+                {{ viaje.estado }}
+              </span>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="6" class="p-8 text-center text-on-surface-variant">
+              Este conductor aún no tiene viajes registrados.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

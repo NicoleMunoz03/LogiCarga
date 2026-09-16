@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+
+{% block title %}Centro de Reportes - LogiCarga{% endblock %}
+
+{% block header_breadcrumb %}
+<div class="flex items-center gap-1 text-on-surface-variant font-body-sm text-body-sm">
+  <span>Gestión Operativa</span>
+  <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+  <span class="text-primary font-semibold">Centro de Reportes</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+  <!-- 1. HEADER DEL CONTENIDO: Título y Acciones -->
+  <section class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-2 border-b border-outline-variant">
+    <div>
+      <h1 class="text-headline-xl font-headline-xl text-primary font-bold tracking-tight">Centro de Reportes</h1>
+      <p class="text-body-md font-body-md text-on-surface-variant mt-1">Acceso a indicadores, auditorías y reportes operativos de flota</p>
+    </div>
+    <!-- Controls Toolbar -->
+    <div class="flex flex-wrap items-center gap-3">
+      <button onclick="window.print()" class="h-10 inline-flex items-center gap-2 bg-surface-container-lowest border border-outline text-primary hover:bg-surface-container-low font-label-md text-label-md px-4 rounded-lg shadow-sm transition-all duration-150 active:scale-[0.99] cursor-pointer" type="button">
+        <span class="material-symbols-outlined text-[18px]">print</span>
+        <span>Imprimir Resumen</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- 2. BANNER DE SÍNTESIS EJECUTIVA / STATUS DE TELEMETRÍA -->
+  <section class="bg-surface-container-lowest rounded-xl border border-outline-variant p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div class="flex items-center gap-3.5">
+      <div class="w-10 h-10 rounded-lg bg-surface-container-low border border-outline-variant flex items-center justify-center text-primary shrink-0">
+        <span class="material-symbols-outlined">sensors</span>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="text-label-md font-label-md text-primary font-bold">Telemetría Operativa LogiCarga</span>
+          <span class="px-2 py-0.5 rounded-full text-label-sm font-label-sm bg-emerald-50 border border-emerald-200 text-emerald-800 font-semibold">
+            OPERACIÓN ACTIVA
+          </span>
+        </div>
+        <p class="text-body-sm font-body-sm text-on-surface-variant mt-0.5">
+          Auditoría en tiempo real y registros certificados en el sistema.
+        </p>
+      </div>
+    </div>
+    <div class="flex items-center gap-6 self-end md:self-center border-t md:border-t-0 pt-2 md:pt-0 border-outline-variant">
+      <div class="text-right">
+        <div class="text-headline-sm font-headline-sm text-primary font-bold font-tabular-data">{{ total_vehiculos }}</div>
+        <div class="text-label-sm font-label-sm text-on-surface-variant">VEHÍCULOS</div>
+      </div>
+      <div class="h-8 w-px bg-outline-variant"></div>
+      <div class="text-right">
+        <div class="text-headline-sm font-headline-sm text-emerald-700 font-bold font-tabular-data">{{ total_conductores }}</div>
+        <div class="text-label-sm font-label-sm text-on-surface-variant">CONDUCTORES</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. CONTENIDO PRINCIPAL: 4 TARJETAS DE ACCESO RÁPIDO -->
+  <section class="space-y-4">
+    <div class="flex items-center justify-between">
+      <h2 class="text-headline-md font-headline-md text-primary font-bold">Módulos de Auditoría y Reportes</h2>
+      <span class="text-body-sm font-body-sm text-on-surface-variant">Seleccione un módulo para ver el análisis detallado</span>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- TARJETA 1: Consumo de Combustible -->
+      <article class="bg-surface-container-lowest rounded-xl border border-outline-variant hover:border-outline p-6 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between group">
+        <div>
+          <div class="flex items-start justify-between gap-4 mb-4">
+            <div class="w-12 h-12 rounded-xl bg-surface-container-low border border-outline-variant flex items-center justify-center text-primary group-hover:scale-105 transition-transform duration-200">
+              <span class="material-symbols-outlined text-[26px]">local_gas_station</span>
+            </div>
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-label-sm font-label-sm bg-surface-container-low border border-outline-variant text-on-surface-variant font-medium">
+              Diesel ACPM
+            </span>
+          </div>
+          <h3 class="text-headline-lg font-headline-lg text-primary font-bold group-hover:text-secondary transition-colors">
+            Consumo de Combustible
+          </h3>
+          <p class="text-body-md font-body-md text-on-surface-variant mt-2 leading-relaxed">
+            Indicadores de rendimiento por galón/litro, costo consolidado de abastecimiento, análisis comparativo por unidad y eficiencia de rutas.
+          </p>
+          <div class="mt-6 p-3.5 bg-surface-container-low rounded-lg border border-outline-variant flex flex-wrap items-center justify-between gap-2">
+            <div class="flex flex-col">
+              <span class="text-label-sm font-label-sm text-on-surface-variant uppercase">Volumen Total</span>
+              <span class="text-label-lg font-label-lg text-primary font-bold font-tabular-data">{{ total_combustible_litros|floatformat:0 }} L</span>
+            </div>
+            <div class="h-6 w-px bg-outline-variant hidden sm:block"></div>
+            <div class="flex flex-col">
+              <span class="text-label-sm font-label-sm text-on-surface-variant uppercase">Gasto Total</span>
+              <span class="text-label-lg font-label-lg text-primary font-bold font-tabular-data">${{ total_combustible_costo|floatformat:0 }} COP</span>
+            </div>
+          </div>
+        </div>
+        <div class="mt-6 pt-4 border-t border-outline-variant flex items-center justify-between">
+          <span class="text-body-sm font-body-sm text-on-surface-variant flex items-center gap-1">
+            <span class="material-symbols-outlined text-[16px] text-emerald-600">verified</span> Auditoría telemática
+          </span>
+          <a href="{% url 'reporte_consumo' %}" class="inline-flex items-center gap-2 bg-primary hover:bg-primary-container text-on-primary text-label-md font-label-md px-4 py-2.5 rounded-lg shadow-sm transition-all duration-150 active:scale-[0.99]">
+            <span>Ver Reporte</span>
+            <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+          </a>
+        </div>
+      </article>
+
+      <!-- TARJETA 2: Operaciones de Viajes -->
+      <article class="bg-surface-container-lowest rounded-xl border border-outline-variant hover:border-outline p-6 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between group">
+        <div>
+          <div class="flex items-start justify-between gap-4 mb-4">
+            <div class="w-12 h-12 rounded-xl bg-secondary-fixed text-on-secondary-fixed flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
+              <span class="material-symbols-outlined text-[26px]">route</span>
+            </div>
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-label-sm font-label-sm bg-blue-50 border border-blue-200 text-blue-800 font-semibold">
+              Módulo de Despacho
+            </span>
+          </div>
+          <h3 class="text-headline-lg font-headline-lg text-primary font-bold group-hover:text-secondary transition-colors">
+            Operaciones de Viajes
+          </h3>
+          <p class="text-body-md font-body-md text-on-surface-variant mt-2 leading-relaxed">
+            Seguimiento de cumplimiento en tiempos de entrega, toneladas transportadas, rutas activas y trazabilidad operativa de viajes.
+          </p>
+          <div class="mt-6 p-3.5 bg-surface-container-low rounded-lg border border-outline-variant flex flex-wrap items-center justify-between gap-2">
+            <div class="flex flex-col">
+              <span class="text-label-sm font-label-sm text-on-surface-variant uppercase">Total Despachos</span>
+              <span class="text-label-lg font-label-lg text-primary font-bold font-tabular-data">{{ total_viajes }}</span>
+            </div>
+            <div class="h-6 w-px bg-outline-variant hidden sm:block"></div>
+            <div class="flex flex-col">
+              <span class="text-label-sm font-label-sm text-on-surface-variant uppercase">Finalizados</span>
+              <span class="text-label-lg font-label-lg text-emerald-700 font-bold font-tabular-data">{{ viajes_finalizados }}</span>
+            </div>
+            <div class="h-6 w-px bg-outline-variant hidden sm:block"></div>
+            <div class="flex flex-col">
+              <span class="text-label-sm font-label-sm text-on-surface-variant uppercase">En Curso</span>
+              <span class="text-label-lg font-label-lg text-blue-700 font-bold font-tabular-data">{{ viajes_en_curso }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="mt-6 pt-4 border-t border-outline-variant flex items-center justify-between">
+          <span class="text-body-sm font-body-sm text-on-surface-variant flex items-center gap-1">
+            <span class="material-symbols-outlined text-[16px] text-primary">map</span> Rutas Troncales
+          </span>
+          <a href="{% url 'reporte_operacional' %}" class="inline-flex items-center gap-2 bg-primary hover:bg-primary-container text-on-primary text-label-md font-label-md px-4 py-2.5 rounded-lg shadow-sm transition-all duration-150 active:scale-[0.99]">
+            <span>Ver Reporte</span>
+            <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+          </a>
+        </div>
+      </article>
+
+      <!-- TARJETA 3: Estado de la Flota -->
+      <article class="bg-surface-container-lowest rounded-xl border border-outline-variant hover:border-outline p-6 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between group">
+        <div>
+          <div class="flex items-start justify-between gap-4 mb-4">
+            <div class="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
+              <span class="material-symbols-outlined text-[26px]">local_shipping</span>
+            </div>
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-label-sm font-label-sm bg-emerald-50 border border-emerald-200 text-emerald-700 font-semibold">
+              Disponibilidad Flota
+            </span>
+          </div>
+          <h3 class="text-headline-lg font-headline-lg text-primary font-bold group-hover:text-secondary transition-colors">
+            Gestión de Vehículos
+          </h3>
+          <p class="text-body-md font-body-md text-on-surface-variant mt-2 leading-relaxed">
+            Disponibilidad de tractocamiones y camiones, kilometraje acumulado, unidades en ruta y en mantenimiento.
+          </p>
+          <div class="mt-6 p-3.5 bg-surface-container-low rounded-lg border border-outline-variant flex flex-wrap items-center justify-between gap-2">
+            <div class="flex flex-col">
+              <span class="text-label-sm font-label-sm text-on-surface-variant uppercase">Total Vehículos</span>
+              <span class="text-label-lg font-label-lg text-primary font-bold font-tabular-data">{{ total_vehiculos }} unidades</span>
+            </div>
+            <div class="h-6 w-px bg-outline-variant hidden sm:block"></div>
+            <div class="flex flex-col">
+              <span class="text-label-sm font-label-sm text-on-surface-variant uppercase">Conductores</span>
+              <span class="text-label-lg font-label-lg text-amber-700 font-bold font-tabular-data">{{ total_conductores }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="mt-6 pt-4 border-t border-outline-variant flex items-center justify-between">
+          <span class="text-body-sm font-body-sm text-on-surface-variant flex items-center gap-1">
+            <span class="material-symbols-outlined text-[16px] text-emerald-600">pin_drop</span> Cobertura Nacional
+          </span>
+          <a href="{% url 'vehiculos_lista' %}" class="inline-flex items-center gap-2 bg-primary hover:bg-primary-container text-on-primary text-label-md font-label-md px-4 py-2.5 rounded-lg shadow-sm transition-all duration-150 active:scale-[0.99]">
+            <span>Ver Flota</span>
+            <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+          </a>
+        </div>
+      </article>
+
+      <!-- TARJETA 4: Mantenimientos -->
+      <article class="bg-surface-container-lowest rounded-xl border border-outline-variant hover:border-outline p-6 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between group">
+        <div>
+          <div class="flex items-start justify-between gap-4 mb-4">
+            <div class="w-12 h-12 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
+              <span class="material-symbols-outlined text-[26px]">build</span>
+            </div>
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-label-sm font-label-sm bg-amber-50 border border-amber-200 text-amber-800 font-semibold">
+              Taller &amp; Servicios
+            </span>
+          </div>
+          <h3 class="text-headline-lg font-headline-lg text-primary font-bold group-hover:text-secondary transition-colors">
+            Mantenimientos
+          </h3>
+          <p class="text-body-md font-body-md text-on-surface-variant mt-2 leading-relaxed">
+            Histórico de órdenes de trabajo, control de gastos en repuestos, cumplimiento preventivo vs correctivo.
+          </p>
+          <div class="mt-6 p-3.5 bg-surface-container-low rounded-lg border border-outline-variant flex flex-wrap items-center justify-between gap-2">
+            <div class="flex flex-col">
+              <span class="text-label-sm font-label-sm text-on-surface-variant uppercase">Total Servicios</span>
+              <span class="text-label-lg font-label-lg text-primary font-bold font-tabular-data">{{ total_mantenimientos }}</span>
+            </div>
+            <div class="h-6 w-px bg-outline-variant hidden sm:block"></div>
+            <div class="flex flex-col">
+              <span class="text-label-sm font-label-sm text-on-surface-variant uppercase">Inversión Total</span>
+              <span class="text-label-lg font-label-lg text-primary font-bold font-tabular-data">${{ total_inversion_mantenimiento|floatformat:0 }} COP</span>
+            </div>
+          </div>
+        </div>
+        <div class="mt-6 pt-4 border-t border-outline-variant flex items-center justify-between">
+          <span class="text-body-sm font-body-sm text-on-surface-variant flex items-center gap-1">
+            <span class="material-symbols-outlined text-[16px] text-primary">inventory_2</span> Servicios Certificados
+          </span>
+          <a href="{% url 'mantenimiento_lista' %}" class="inline-flex items-center gap-2 bg-primary hover:bg-primary-container text-on-primary text-label-md font-label-md px-4 py-2.5 rounded-lg shadow-sm transition-all duration-150 active:scale-[0.99]">
+            <span>Ver Mantenimientos</span>
+            <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+          </a>
+        </div>
+      </article>
+    </div>
+  </section>
+</div>
+{% endblock %}

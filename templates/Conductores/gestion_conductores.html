@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+
+{% block title %}LogiCarga - Gestión de Conductores{% endblock %}
+
+{% block header_title %}Gestión de Conductores{% endblock %}
+{% block header_subtitle %}Administración de la nómina operativa, licencias y estado en ruta{% endblock %}
+
+{% block content %}
+<!-- Section 1: Telemetry & Driver KPI Metrics -->
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+  <!-- KPI 1: Total Conductores -->
+  <div class="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant/40 shadow-xs hover:border-secondary transition-colors duration-150">
+    <div class="flex items-center justify-between">
+      <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold text-[11px]">Total Conductores</span>
+      <div class="w-9 h-9 rounded-lg bg-surface-container-low flex items-center justify-center text-primary">
+        <span class="material-symbols-outlined text-[20px]">badge</span>
+      </div>
+    </div>
+    <div class="mt-3 flex items-baseline gap-2">
+      <span class="font-headline-xl text-headline-xl text-primary font-bold font-tabular-data">{{ total_conductores }}</span>
+      <span class="font-label-md text-label-md text-on-surface-variant font-medium">registrados</span>
+    </div>
+    <div class="mt-3 flex items-center gap-1.5 text-secondary font-label-sm text-label-sm">
+      <span class="material-symbols-outlined text-[16px]">trending_up</span>
+      <span>100% dotación cubierta</span>
+    </div>
+  </div>
+
+  <!-- KPI 2: Activos / En ruta -->
+  <div class="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant/40 shadow-xs hover:border-blue-300 transition-colors duration-150">
+    <div class="flex items-center justify-between">
+      <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold text-[11px]">Activos / En Ruta</span>
+      <div class="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center text-blue-700">
+        <span class="material-symbols-outlined text-[20px]">local_shipping</span>
+      </div>
+    </div>
+    <div class="mt-3 flex items-baseline gap-2">
+      <span class="font-headline-xl text-headline-xl text-primary font-bold font-tabular-data">{{ activos_en_ruta }}</span>
+      <span class="font-label-md text-label-md text-on-surface-variant font-medium">en servicio</span>
+    </div>
+    <div class="mt-3 flex items-center gap-1.5 text-blue-700 font-label-sm text-label-sm">
+      <span class="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
+      <span>{{ pct_en_ruta }}% de la flota en tránsito</span>
+    </div>
+  </div>
+
+  <!-- KPI 3: Disponibles -->
+  <div class="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant/40 shadow-xs hover:border-emerald-300 transition-colors duration-150">
+    <div class="flex items-center justify-between">
+      <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold text-[11px]">Disponibles</span>
+      <div class="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-700">
+        <span class="material-symbols-outlined text-[20px]">check_circle</span>
+      </div>
+    </div>
+    <div class="mt-3 flex items-baseline gap-2">
+      <span class="font-headline-xl text-headline-xl text-primary font-bold font-tabular-data">{{ disponibles }}</span>
+      <span class="font-label-md text-label-md text-on-surface-variant font-medium">en base</span>
+    </div>
+    <div class="mt-3 flex items-center gap-1.5 text-emerald-700 font-label-sm text-label-sm">
+      <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+      <span>Listos para asignación inmediata</span>
+    </div>
+  </div>
+
+  <!-- KPI 4: Licencias por renovar / Alertas -->
+  <div class="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant/40 shadow-xs hover:border-emerald-300 transition-colors duration-150">
+    <div class="flex items-center justify-between">
+      <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold text-[11px]">Licencias y RUNT</span>
+      <div class="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-700">
+        <span class="material-symbols-outlined text-[20px]">verified</span>
+      </div>
+    </div>
+    <div class="mt-3 flex items-baseline gap-2">
+      <span class="font-headline-xl text-headline-xl text-emerald-700 font-bold font-tabular-data">100%</span>
+      <span class="font-label-md text-label-md text-on-surface-variant font-medium">vigentes</span>
+    </div>
+    <div class="mt-3 flex items-center gap-1.5 text-emerald-700 font-label-sm text-label-sm">
+      <span class="material-symbols-outlined text-[16px]">check_circle</span>
+      <span>Pólizas EPS/ARL al día</span>
+    </div>
+  </div>
+</section>
+
+<!-- Section 2: Command & Control Toolbar -->
+<section class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/40 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+  <!-- Search Input -->
+  <div class="relative flex-1 min-w-[280px] max-w-xl">
+    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-on-surface-variant">
+      <span class="material-symbols-outlined text-[20px]">search</span>
+    </span>
+    <input id="input-busqueda-conductor" class="w-full h-10 pl-10 pr-4 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-body-md text-primary placeholder-on-surface-variant/70 focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/15 transition-all" placeholder="Buscar por nombre, licencia o correo..." type="text"/>
+  </div>
+
+  <!-- Filter Dropdowns & Actions -->
+  <div class="flex flex-wrap items-center gap-3">
+    <button id="btn-reset-filtros-conductor" class="text-xs text-secondary hover:underline font-semibold cursor-pointer" type="button">Restablecer filtros</button>
+    <!-- Secondary Action: Exportar Nómina -->
+    <button id="btn-export-conductores" class="h-10 px-4 bg-surface-container-lowest border border-outline-variant hover:border-outline hover:bg-surface-container-low text-primary font-label-md text-label-md rounded-lg flex items-center gap-2 transition-colors cursor-pointer" type="button">
+      <span class="material-symbols-outlined text-[18px]">download</span>
+      <span>Exportar CSV</span>
+    </button>
+    <!-- Primary Action: Registrar Conductor -->
+    <a href="{% url 'conductor_crear' %}" class="h-10 px-4 bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md rounded-lg flex items-center gap-2 shadow-xs transition-all duration-150">
+      <span class="material-symbols-outlined text-[18px]">add</span>
+      <span>+ Registrar Conductor</span>
+    </a>
+  </div>
+</section>
+
+<!-- Section 3: Driver Roster Modern Data Table -->
+<section class="bg-surface-container-lowest rounded-xl border border-outline-variant/40 shadow-xs overflow-hidden">
+  <div class="overflow-x-auto">
+    <table id="tabla-conductores" class="w-full text-left border-collapse">
+      <thead>
+        <tr class="bg-surface-bright border-b border-outline-variant/30 h-11">
+          <th class="px-6 py-3 font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-semibold text-[11px]" scope="col">Conductor</th>
+          <th class="px-6 py-3 font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-semibold text-[11px]" scope="col">Número de Licencia</th>
+          <th class="px-6 py-3 font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-semibold text-[11px]" scope="col">Teléfono</th>
+          <th class="px-6 py-3 font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-semibold text-[11px]" scope="col">Correo Electrónico</th>
+          <th class="px-6 py-3 font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-semibold text-[11px] text-right" scope="col">Acciones</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-outline-variant/20 font-body-md text-body-md">
+        {% for c in conductores %}
+        <tr class="hover:bg-surface-container-low/60 transition-colors duration-100 h-14 row-conductor">
+          <td class="px-6 py-3 whitespace-nowrap">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-full bg-primary text-on-primary font-label-md text-label-md flex items-center justify-center font-bold">
+                {{ c.nombre_completo|slice:":2"|upper }}
+              </div>
+              <div>
+                <div class="font-label-lg text-label-lg text-primary font-semibold col-nombre">{{ c.nombre_completo }}</div>
+              </div>
+            </div>
+          </td>
+          <td class="px-6 py-3 whitespace-nowrap">
+            <span class="font-tabular-data text-tabular-data bg-surface-container-low text-primary px-2.5 py-1 rounded border border-outline-variant/30 font-medium col-licencia">{{ c.numero_licencia }}</span>
+          </td>
+          <td class="px-6 py-3 whitespace-nowrap">
+            <a class="flex items-center gap-1.5 text-primary hover:text-secondary font-tabular-data" href="tel:{{ c.telefono }}">
+              <span class="material-symbols-outlined text-[16px] text-on-surface-variant">phone</span>
+              <span>{{ c.telefono }}</span>
+            </a>
+          </td>
+          <td class="px-6 py-3 whitespace-nowrap">
+            <a class="text-on-surface-variant hover:text-primary hover:underline col-correo" href="mailto:{{ c.correo }}">{{ c.correo }}</a>
+          </td>
+          <td class="px-6 py-3 whitespace-nowrap text-right">
+            <div class="flex items-center justify-end gap-1">
+              <a href="{% url 'conductor_detalle' c.id %}" class="p-1.5 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-lg transition-colors inline-flex items-center" title="Ver Expediente">
+                <span class="material-symbols-outlined text-[18px]">visibility</span>
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" class="px-6 py-8 text-center text-on-surface-variant">
+            No hay conductores registrados aún.
+          </td>
+        </tr>
+        {% endfor %}
+        <tr id="no-conductores-row" style="display: none;">
+          <td colspan="5" class="px-6 py-8 text-center text-on-surface-variant">
+            No se encontraron conductores con el criterio de búsqueda.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Section 4: Visual Pagination Toolbar -->
+  <div class="px-6 py-3.5 bg-surface-bright border-t border-outline-variant/30 flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div class="font-body-md text-body-md text-on-surface-variant">
+      Mostrando <span class="font-semibold text-primary font-tabular-data text-tabular-data" id="count-conductores-visibles">{{ total_conductores }}</span> de <span class="font-semibold text-primary font-tabular-data text-tabular-data">{{ total_conductores }}</span> conductores
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  const inputBusquedaCond = document.getElementById('input-busqueda-conductor');
+  const rowsConductores = document.querySelectorAll('.row-conductor');
+  const noConductoresRow = document.getElementById('no-conductores-row');
+  const countCondVisibles = document.getElementById('count-conductores-visibles');
+
+  function filterConductores() {
+    const query = (inputBusquedaCond?.value || '').toLowerCase().trim();
+
+    let count = 0;
+    rowsConductores.forEach(row => {
+      const text = row.innerText.toLowerCase();
+      if (!query || text.includes(query)) {
+        row.style.display = '';
+        count++;
+      } else {
+        row.style.display = 'none';
+      }
+    });
+
+    if (noConductoresRow) noConductoresRow.style.display = count === 0 && rowsConductores.length > 0 ? '' : 'none';
+    if (countCondVisibles) countCondVisibles.innerText = count;
+  }
+
+  inputBusquedaCond?.addEventListener('input', filterConductores);
+
+  document.getElementById('btn-reset-filtros-conductor')?.addEventListener('click', () => {
+    if (inputBusquedaCond) inputBusquedaCond.value = '';
+    filterConductores();
+  });
+
+  // CSV Export
+  document.getElementById('btn-export-conductores')?.addEventListener('click', () => {
+    const table = document.getElementById('tabla-conductores');
+    if (!table) return;
+    let csv = [];
+    const headers = [];
+    table.querySelectorAll('thead th').forEach((th, idx) => {
+      if (idx < 4) headers.push(`"${th.innerText.trim().replace(/"/g, '""')}"`);
+    });
+    csv.push(headers.join(','));
+
+    table.querySelectorAll('tbody tr.row-conductor').forEach(tr => {
+      if (tr.style.display !== 'none') {
+        const rowData = [];
+        tr.querySelectorAll('td').forEach((td, idx) => {
+          if (idx < 4) rowData.push(`"${td.innerText.replace(/\s+/g, ' ').trim().replace(/"/g, '""')}"`);
+        });
+        csv.push(rowData.join(','));
+      }
+    });
+
+    const blob = new Blob([csv.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `nomina_conductores_logicarga_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+</script>
+{% endblock %}

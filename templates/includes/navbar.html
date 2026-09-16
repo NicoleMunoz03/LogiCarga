@@ -1,0 +1,45 @@
+{% comment %}
+Componente Barra Superior (Navbar) Unificado - LogiCarga Transportes S.A.
+{% endcomment %}
+<header class="sticky top-0 z-30 bg-surface-container-lowest/95 backdrop-blur border-b border-outline-variant/30 px-8 py-3.5 flex items-center justify-between shadow-xs">
+  <div>
+    <h1 class="font-headline-lg text-headline-lg font-bold text-primary tracking-tight">
+      {% block header_title %}Panel de Control{% endblock %}
+    </h1>
+    <p class="font-body-sm text-body-sm text-on-surface-variant">
+      {% block header_subtitle %}Gestión y monitoreo de la operación logística{% endblock %}
+    </p>
+  </div>
+
+  <!-- Right Header Actions -->
+  <div class="flex items-center gap-5">
+    <!-- Live Status Indicator -->
+    <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 shadow-2xs">
+      <span class="relative flex h-2.5 w-2.5">
+        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+        <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-600"></span>
+      </span>
+      <span class="font-label-sm text-label-sm text-emerald-800 tracking-wide font-semibold">
+        {% if is_admin %}En línea / Operación activa{% else %}Conductor en servicio{% endif %}
+      </span>
+    </div>
+
+    <!-- Direct Logout Button -->
+    <a href="{% url 'logout' %}" aria-label="Cerrar Sesión" title="Cerrar Sesión" class="p-2 text-on-surface-variant hover:text-error hover:bg-surface-container rounded-lg transition-colors duration-150">
+      <span class="material-symbols-outlined text-[22px]">logout</span>
+    </a>
+
+    <div class="h-8 w-px bg-outline-variant/40"></div>
+
+    <!-- User Profile Chip -->
+    <div class="flex items-center gap-3 pl-1 select-none">
+      <div class="w-9 h-9 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold font-headline-sm text-headline-sm ring-1 ring-outline-variant/40 shadow-xs">
+        {{ user_initials|default:"U" }}
+      </div>
+      <div class="text-left hidden sm:block">
+        <p class="font-label-lg text-label-lg font-semibold text-primary leading-tight">{{ user_display_name|default:"Usuario" }}</p>
+        <p class="font-body-sm text-body-sm text-on-surface-variant text-[11px] leading-tight">{{ user_role_display|default:"Personal de Transporte" }}</p>
+      </div>
+    </div>
+  </div>
+</header>

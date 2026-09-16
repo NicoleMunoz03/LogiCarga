@@ -1,0 +1,110 @@
+{% comment %}
+Componente Sidebar Unificado - LogiCarga Transportes S.A.
+Adapta automáticamente la navegación según el rol del usuario (Administrador vs Conductor).
+{% endcomment %}
+<aside class="fixed top-0 left-0 h-screen w-64 border-r border-outline-variant/40 bg-surface-container-lowest z-40 shadow-sm flex flex-col justify-between p-4 select-none">
+  <div class="space-y-5">
+    <!-- Header Brand -->
+    <a href="{% if is_admin %}{% url 'dashboard' %}{% else %}{% url 'mis_viajes' %}{% endif %}" class="flex items-center gap-3 px-2 py-1 group transition-opacity hover:opacity-90">
+      <div class="w-10 h-10 rounded-lg bg-primary flex items-center justify-center text-on-primary shadow-sm group-hover:bg-primary-container transition-colors">
+        <span class="material-symbols-outlined text-[24px]">local_shipping</span>
+      </div>
+      <div>
+        <span class="font-headline-md text-headline-md font-bold text-primary tracking-tight block leading-tight">LogiCarga</span>
+        <span class="font-body-sm text-body-sm text-on-surface-variant block font-medium">Transportes S.A.</span>
+      </div>
+    </a>
+
+    <!-- Quick Action CTA -->
+    {% if is_admin %}
+    <div class="pt-1">
+      <a href="{% url 'viaje_crear' %}" class="w-full flex items-center justify-center gap-2 bg-primary text-on-primary font-label-md text-label-md py-2.5 px-3 rounded-lg shadow-sm hover:bg-primary-container transition-colors duration-150 inline-flex text-center">
+        <span class="material-symbols-outlined text-[18px]">bolt</span>
+        <span>Despacho Rápido</span>
+      </a>
+    </div>
+    {% else %}
+    <div class="pt-1">
+      <a href="{% url 'combustible_crear' %}" class="w-full flex items-center justify-center gap-2 bg-primary text-on-primary font-label-md text-label-md py-2.5 px-3 rounded-lg shadow-sm hover:bg-primary-container transition-colors duration-150 inline-flex text-center">
+        <span class="material-symbols-outlined text-[18px]">local_gas_station</span>
+        <span>Cargar Combustible</span>
+      </a>
+    </div>
+    {% endif %}
+
+    <!-- Navigation Section -->
+    <nav class="space-y-1 pt-1">
+      {% if is_admin %}
+        <!-- Dashboard -->
+        <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-body-md transition-colors duration-150 {% if request.resolver_match.url_name == 'dashboard' %}bg-surface-container-low text-primary font-label-lg font-semibold border-l-4 border-primary shadow-xs{% else %}text-on-surface-variant font-body-md hover:bg-surface-container hover:text-on-surface{% endif %}" href="{% url 'dashboard' %}">
+          <span class="material-symbols-outlined text-[20px]" {% if request.resolver_match.url_name == 'dashboard' %}style="font-variation-settings: 'FILL' 1;"{% endif %}>dashboard</span>
+          <span>Dashboard</span>
+        </a>
+
+        <!-- Vehículos -->
+        <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-body-md transition-colors duration-150 {% if request.resolver_match.url_name in 'vehiculos_lista vehiculo_crear vehiculo_detalle' %}bg-surface-container-low text-primary font-label-lg font-semibold border-l-4 border-primary shadow-xs{% else %}text-on-surface-variant font-body-md hover:bg-surface-container hover:text-on-surface{% endif %}" href="{% url 'vehiculos_lista' %}">
+          <span class="material-symbols-outlined text-[20px]" {% if request.resolver_match.url_name in 'vehiculos_lista vehiculo_crear vehiculo_detalle' %}style="font-variation-settings: 'FILL' 1;"{% endif %}>local_shipping</span>
+          <span>Vehículos</span>
+        </a>
+
+        <!-- Conductores -->
+        <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-body-md transition-colors duration-150 {% if request.resolver_match.url_name in 'conductores_lista conductor_crear conductor_detalle' %}bg-surface-container-low text-primary font-label-lg font-semibold border-l-4 border-primary shadow-xs{% else %}text-on-surface-variant font-body-md hover:bg-surface-container hover:text-on-surface{% endif %}" href="{% url 'conductores_lista' %}">
+          <span class="material-symbols-outlined text-[20px]" {% if request.resolver_match.url_name in 'conductores_lista conductor_crear conductor_detalle' %}style="font-variation-settings: 'FILL' 1;"{% endif %}>badge</span>
+          <span>Conductores</span>
+        </a>
+
+        <!-- Viajes -->
+        <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-body-md transition-colors duration-150 {% if request.resolver_match.url_name in 'viajes_lista viaje_crear viaje_detalle' %}bg-surface-container-low text-primary font-label-lg font-semibold border-l-4 border-primary shadow-xs{% else %}text-on-surface-variant font-body-md hover:bg-surface-container hover:text-on-surface{% endif %}" href="{% url 'viajes_lista' %}">
+          <span class="material-symbols-outlined text-[20px]" {% if request.resolver_match.url_name in 'viajes_lista viaje_crear viaje_detalle' %}style="font-variation-settings: 'FILL' 1;"{% endif %}>route</span>
+          <span>Viajes</span>
+        </a>
+
+        <!-- Combustible -->
+        <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-body-md transition-colors duration-150 {% if request.resolver_match.url_name in 'combustible_lista combustible_crear combustible_detalle' %}bg-surface-container-low text-primary font-label-lg font-semibold border-l-4 border-primary shadow-xs{% else %}text-on-surface-variant font-body-md hover:bg-surface-container hover:text-on-surface{% endif %}" href="{% url 'combustible_lista' %}">
+          <span class="material-symbols-outlined text-[20px]" {% if request.resolver_match.url_name in 'combustible_lista combustible_crear combustible_detalle' %}style="font-variation-settings: 'FILL' 1;"{% endif %}>local_gas_station</span>
+          <span>Combustible</span>
+        </a>
+
+        <!-- Mantenimientos -->
+        <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-body-md transition-colors duration-150 {% if request.resolver_match.url_name in 'mantenimiento_lista mantenimiento_crear mantenimiento_detalle' %}bg-surface-container-low text-primary font-label-lg font-semibold border-l-4 border-primary shadow-xs{% else %}text-on-surface-variant font-body-md hover:bg-surface-container hover:text-on-surface{% endif %}" href="{% url 'mantenimiento_lista' %}">
+          <span class="material-symbols-outlined text-[20px]" {% if request.resolver_match.url_name in 'mantenimiento_lista mantenimiento_crear mantenimiento_detalle' %}style="font-variation-settings: 'FILL' 1;"{% endif %}>build</span>
+          <span>Mantenimientos</span>
+        </a>
+
+        <!-- Reportes -->
+        <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-body-md transition-colors duration-150 {% if request.resolver_match.url_name in 'reportes_index reporte_consumo reporte_operacional' %}bg-surface-container-low text-primary font-label-lg font-semibold border-l-4 border-primary shadow-xs{% else %}text-on-surface-variant font-body-md hover:bg-surface-container hover:text-on-surface{% endif %}" href="{% url 'reportes_index' %}">
+          <span class="material-symbols-outlined text-[20px]" {% if request.resolver_match.url_name in 'reportes_index reporte_consumo reporte_operacional' %}style="font-variation-settings: 'FILL' 1;"{% endif %}>analytics</span>
+          <span>Reportes</span>
+        </a>
+      {% else %}
+        <!-- Mis Viajes (Conductor) -->
+        <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-body-md transition-colors duration-150 {% if request.resolver_match.url_name == 'mis_viajes' %}bg-surface-container-low text-primary font-label-lg font-semibold border-l-4 border-primary shadow-xs{% else %}text-on-surface-variant font-body-md hover:bg-surface-container hover:text-on-surface{% endif %}" href="{% url 'mis_viajes' %}">
+          <span class="material-symbols-outlined text-[20px]" {% if request.resolver_match.url_name == 'mis_viajes' %}style="font-variation-settings: 'FILL' 1;"{% endif %}>route</span>
+          <span>Mis Viajes</span>
+        </a>
+
+        <!-- Registrar Combustible (Conductor) -->
+        <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-body-md transition-colors duration-150 {% if request.resolver_match.url_name in 'combustible_crear combustible_detalle' %}bg-surface-container-low text-primary font-label-lg font-semibold border-l-4 border-primary shadow-xs{% else %}text-on-surface-variant font-body-md hover:bg-surface-container hover:text-on-surface{% endif %}" href="{% url 'combustible_crear' %}">
+          <span class="material-symbols-outlined text-[20px]" {% if request.resolver_match.url_name in 'combustible_crear combustible_detalle' %}style="font-variation-settings: 'FILL' 1;"{% endif %}>local_gas_station</span>
+          <span>Registrar Combustible</span>
+        </a>
+      {% endif %}
+    </nav>
+  </div>
+
+  <!-- Sidebar Footer -->
+  <div class="border-t border-outline-variant/30 pt-4 space-y-2">
+    <a class="flex items-center gap-3 px-3 py-2 rounded-lg text-error font-body-sm text-body-sm hover:bg-error-container/30 transition-colors duration-150" href="{% url 'logout' %}">
+      <span class="material-symbols-outlined text-[18px]">logout</span>
+      <span class="font-medium">Cerrar Sesión</span>
+    </a>
+    <div class="px-3 pt-1 flex items-center justify-between text-outline">
+      <span class="font-tabular-data text-tabular-data text-[11px]">Sistema v2.4</span>
+      {% if is_admin %}
+      <span class="inline-flex items-center px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface-variant text-[10px] font-semibold tracking-wider">ADMIN</span>
+      {% else %}
+      <span class="inline-flex items-center px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-semibold tracking-wider">CONDUCTOR</span>
+      {% endif %}
+    </div>
+  </div>
+</aside>

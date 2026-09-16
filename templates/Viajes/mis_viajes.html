@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}LogiCarga - Mis Viajes Asignados{% endblock %}
+
+{% block header_title %}Mis Viajes Asignados{% endblock %}
+{% block header_subtitle %}Control y seguimiento de rutas, itinerarios y manifiestos de transporte asignados a su usuario{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+  <!-- KPI CARDS (BENTO TELEMETRY) -->
+  <section class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+    <!-- Total Mis Viajes -->
+    <div class="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant/40 shadow-xs flex flex-col justify-between hover:border-secondary transition-colors duration-150">
+      <div class="flex items-center justify-between">
+        <span class="font-label-md text-label-md uppercase text-on-surface-variant font-semibold tracking-wider text-[11px]">MIS VIAJES ASIGNADOS</span>
+        <div class="w-9 h-9 rounded-lg bg-surface-container-low flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined text-[20px]">route</span>
+        </div>
+      </div>
+      <div class="mt-3">
+        <div class="font-headline-xl text-headline-xl font-bold text-primary font-tabular-data">{{ viajes.count }}</div>
+        <p class="font-body-sm text-body-sm text-on-surface-variant mt-1 flex items-center gap-1.5">
+          <span class="text-emerald-700 font-medium font-tabular-data flex items-center">
+            <span class="material-symbols-outlined text-[16px]">check</span> Asignados a mi cuenta
+          </span>
+        </p>
+      </div>
+    </div>
+
+    <!-- Acción Directa: Registrar Combustible -->
+    <div class="sm:col-span-2 bg-surface-container-lowest rounded-xl p-5 border border-outline-variant/40 shadow-xs flex items-center justify-between hover:border-secondary transition-colors duration-150">
+      <div class="space-y-1">
+        <span class="font-label-md text-label-md uppercase text-primary font-semibold tracking-wider flex items-center gap-1.5 text-[11px]">
+          <span class="material-symbols-outlined text-primary text-[18px]">local_gas_station</span> Abastecimiento de Combustible
+        </span>
+        <p class="font-body-sm text-body-sm text-on-surface-variant">Registre los recibos y litros cargados en las estaciones de servicio durante sus recorridos.</p>
+      </div>
+      <a href="{% url 'combustible_crear' %}" class="flex items-center gap-2 bg-primary hover:bg-primary-container text-on-primary px-4 py-2.5 rounded-lg font-label-md text-label-md font-semibold transition-colors shadow-xs shrink-0">
+        <span class="material-symbols-outlined text-[18px]">add</span>
+        <span>Registrar Carga</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- DATA TABLE CONTAINER -->
+  <section class="bg-surface-container-lowest rounded-xl border border-outline-variant/40 shadow-xs flex flex-col overflow-hidden">
+    <div class="p-5 border-b border-outline-variant/30 bg-surface-bright flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div>
+        <h2 class="font-headline-sm text-headline-sm font-bold text-primary">Listado de Mis Rutas</h2>
+        <p class="font-body-sm text-body-sm text-on-surface-variant">Consulte los detalles de origen, destino y estado de sus viajes asignados</p>
+      </div>
+      <span class="font-tabular-data text-tabular-data text-on-surface-variant font-medium">{{ viajes.count }} viajes</span>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-surface-bright border-b border-outline-variant/30 text-on-surface-variant font-label-md text-label-md h-11">
+            <th class="py-3 px-6 font-semibold uppercase tracking-wider text-[11px]">ID / Manifiesto</th>
+            <th class="py-3 px-6 font-semibold uppercase tracking-wider text-[11px]">Vehículo</th>
+            <th class="py-3 px-6 font-semibold uppercase tracking-wider text-[11px]">Ruta (Origen → Destino)</th>
+            <th class="py-3 px-6 font-semibold uppercase tracking-wider text-[11px]">Salida Programada</th>
+            <th class="py-3 px-6 font-semibold uppercase tracking-wider text-[11px]">Tipo Carga</th>
+            <th class="py-3 px-6 font-semibold uppercase tracking-wider text-[11px]">Estado</th>
+            <th class="py-3 px-6 font-semibold uppercase tracking-wider text-[11px] text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-outline-variant/20 font-body-md text-body-md text-on-surface">
+          {% for viaje in viajes %}
+          <tr class="hover:bg-surface-container-low/60 transition-colors duration-150">
+            <td class="py-4 px-6 whitespace-nowrap">
+              <span class="font-bold text-secondary font-tabular-data bg-surface-container-low px-2 py-0.5 rounded border border-outline-variant/30">VJ-{{ viaje.id|stringformat:"05d" }}</span>
+            </td>
+            <td class="py-4 px-6 whitespace-nowrap">
+              <div class="font-semibold text-primary">{{ viaje.vehiculo.placa }}</div>
+              <div class="text-xs text-on-surface-variant font-body-sm">{{ viaje.vehiculo.modelo }}</div>
+            </td>
+            <td class="py-4 px-6 whitespace-nowrap">
+              <div class="font-medium text-primary flex items-center gap-1.5">
+                <span>{{ viaje.ciudad_origen }}</span>
+                <span class="material-symbols-outlined text-xs text-outline">arrow_forward</span>
+                <span>{{ viaje.ciudad_destino }}</span>
+              </div>
+            </td>
+            <td class="py-4 px-6 whitespace-nowrap font-tabular-data text-on-surface-variant">
+              {{ viaje.fecha_hora_salida|date:"d/m/Y H:i" }}
+            </td>
+            <td class="py-4 px-6 whitespace-nowrap text-on-surface-variant">
+              {{ viaje.tipo_carga }}
+            </td>
+            <td class="py-4 px-6 whitespace-nowrap">
+              {% if viaje.estado == 'En curso' %}
+              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                <span class="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse"></span> {{ viaje.estado }}
+              </span>
+              {% elif viaje.estado == 'Programado' %}
+              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-600"></span> {{ viaje.estado }}
+              </span>
+              {% else %}
+              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> {{ viaje.estado }}
+              </span>
+              {% endif %}
+            </td>
+            <td class="py-4 px-6 whitespace-nowrap text-right">
+              <a href="{% url 'combustible_crear' %}" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface-container-low text-primary hover:bg-primary hover:text-on-primary transition-colors text-xs font-semibold border border-outline-variant/40 shadow-xs" title="Cargar Combustible">
+                <span class="material-symbols-outlined text-[16px]">local_gas_station</span>
+                <span>Cargar Combustible</span>
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="py-12 px-4 text-center">
+              <div class="flex flex-col items-center justify-center gap-2 text-on-surface-variant">
+                <span class="material-symbols-outlined text-4xl text-outline">route</span>
+                <p class="font-headline-sm text-headline-sm font-semibold text-primary">No tiene viajes asignados actualmente</p>
+                <p class="font-body-sm text-body-sm text-on-surface-variant">Cuando el despachador le asigne una ruta, aparecerá listada en este panel.</p>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}
