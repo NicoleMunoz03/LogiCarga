@@ -1,0 +1,32 @@
+{
+  "name": "LogiCarga Transportes S.A.",
+  "short_name": "LogiCarga",
+  "description": "Sistema Integral de Gestión de Flotas, Cargas y Viáticos",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#00142f",
+  "theme_color": "#00142f",
+  "orientation": "portrait-primary",
+  "categories": ["business", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/static/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/static/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/static/icons/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

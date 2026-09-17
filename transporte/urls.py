@@ -64,5 +64,10 @@ urlpatterns = [
     # Viáticos (Administrador)
     path('viaticos/admin/', views.viaticos_admin, name='viaticos_admin'),
     path('viaticos/admin/<int:id>/estado/', views.viatico_cambiar_estado, name='viatico_cambiar_estado'),
+
+    # PWA (Progressive Web App)
+    path('manifest.json', views.manifest_view, name='pwa_manifest'),
+    path('sw.js', views.service_worker_view, name='pwa_service_worker'),
+    path('offline/', views.offline_view, name='pwa_offline'),
 ]
 

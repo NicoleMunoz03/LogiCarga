@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-[#00142f]">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sin Conexión | LogiCarga Transportes</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="manifest" href="/manifest.json"/>
+  <meta name="theme-color" content="#00142f"/>
+</head>
+<body class="h-full flex items-center justify-center p-4 text-[#f8f9ff] font-['Inter',sans-serif]">
+
+  <div class="max-w-md w-full text-center space-y-6 bg-[#0f294a]/80 backdrop-blur-xl border border-[#8fa7fe]/20 rounded-3xl p-8 shadow-2xl">
+    
+    <!-- Icon Badge -->
+    <div class="relative inline-flex items-center justify-center">
+      <div class="w-20 h-20 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+        <span class="material-symbols-outlined text-4xl animate-pulse">wifi_off</span>
+      </div>
+      <span class="absolute -top-1 -right-1 flex h-4 w-4">
+        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+        <span class="relative inline-flex rounded-full h-4 w-4 bg-amber-500"></span>
+      </span>
+    </div>
+
+    <!-- Title & Message -->
+    <div class="space-y-2">
+      <h1 class="text-2xl font-bold font-['Plus_Jakarta_Sans',sans-serif] text-white">Sin Conexión a Internet</h1>
+      <p class="text-sm text-[#b0c8f1] leading-relaxed">
+        Parece que estás en una zona sin cobertura celular o sin conexión de datos. LogiCarga funciona como una App instalada, pero necesitas señal para sincronizar viajes y reportes.
+      </p>
+    </div>
+
+    <!-- Instructions / Status Card -->
+    <div class="text-left bg-[#00142f]/60 rounded-2xl p-4 border border-[#8fa7fe]/10 space-y-2 text-xs text-[#b0c8f1]">
+      <div class="flex items-center gap-2 text-white font-medium">
+        <span class="material-symbols-outlined text-amber-400 text-base">info</span>
+        <span>Recomendaciones para Conductores:</span>
+      </div>
+      <ul class="list-disc list-inside space-y-1 pl-1 text-[11px] text-[#7a91b7]">
+        <li>Verifica si tienes los datos móviles activados o modo avión desactivado.</li>
+        <li>Tus fotos y comprobantes tomados con la cámara se guardarán en tu galería para subirlos cuando recuperes señal.</li>
+      </ul>
+    </div>
+
+    <!-- Retry Action Button -->
+    <button onclick="window.location.reload()" class="w-full inline-flex items-center justify-center gap-2 py-3.5 px-6 rounded-2xl bg-gradient-to-r from-[#4059aa] to-[#2f96db] hover:from-[#354c93] hover:to-[#267bb4] text-white font-semibold shadow-lg shadow-[#4059aa]/30 hover:scale-[1.01] active:scale-[0.99] transition-all">
+      <span class="material-symbols-outlined text-lg">sync</span>
+      <span>Reintentar Conexión</span>
+    </button>
+
+    <!-- Footer Branding -->
+    <div class="pt-2 text-xs text-[#7a91b7]">
+      LogiCarga App &bull; Sistema de Transporte y Carga
+    </div>
+  </div>
+
+  <script>
+    // Automatically reload when network comes back online
+    window.addEventListener('online', () => {
+      window.location.reload();
+    });
+  </script>
+</body>
+</html>

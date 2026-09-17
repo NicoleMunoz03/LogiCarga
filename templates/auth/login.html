@@ -4,6 +4,15 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Iniciar Sesión - LogiCarga Transportes S.A.</title>
+<!-- PWA & Mobile Web App Meta -->
+<link rel="manifest" href="/manifest.json"/>
+<meta name="theme-color" content="#00142f"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="LogiCarga"/>
+<link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png"/>
+<link rel="icon" type="image/png" sizes="192x192" href="/static/icons/icon-192x192.png"/>
 <!-- Material Symbols Outlined -->
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <!-- Google Fonts: Plus Jakarta Sans & Inter -->
@@ -384,6 +393,20 @@
     function showInternalHelp(e) {
       e.preventDefault();
       alert("Soporte Técnico de Despacho LogiCarga: Línea interna ext. 4040 o mesa de ayuda NOC disponible 24/7.");
+    }
+  </script>
+  <!-- PWA Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js', { scope: '/' })
+          .then((registration) => {
+            console.log('LogiCarga PWA: Service Worker activo en login');
+          })
+          .catch((err) => {
+            console.warn('LogiCarga PWA SW error:', err);
+          });
+      });
     }
   </script>
 </body></html>

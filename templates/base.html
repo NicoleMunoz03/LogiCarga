@@ -5,6 +5,16 @@
   <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
   <title>{% block title %}LogiCarga Transportes S.A.{% endblock %}</title>
 
+  <!-- PWA & Mobile Web App Meta -->
+  <link rel="manifest" href="/manifest.json"/>
+  <meta name="theme-color" content="#00142f"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="LogiCarga"/>
+  <link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png"/>
+  <link rel="icon" type="image/png" sizes="192x192" href="/static/icons/icon-192x192.png"/>
+
   <!-- Google Fonts: Inter & Plus Jakarta Sans + Material Symbols -->
   <link href="https://fonts.googleapis.com" rel="preconnect"/>
   <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
@@ -223,5 +233,20 @@
   </script>
 
   {% block extra_scripts %}{% endblock %}
+
+  <!-- PWA Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js', { scope: '/' })
+          .then((registration) => {
+            console.log('LogiCarga PWA: Service Worker registrado con éxito en scope:', registration.scope);
+          })
+          .catch((error) => {
+            console.warn('LogiCarga PWA: Fallo en registro de Service Worker:', error);
+          });
+      });
+    }
+  </script>
 </body>
 </html>

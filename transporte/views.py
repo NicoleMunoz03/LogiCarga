@@ -2,7 +2,9 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, HttpResponse
+from django.conf import settings
+import os
 from django.db.models import Sum, Count, Avg, Q
 from django.utils import timezone
 
@@ -957,4 +959,35 @@ def viatico_cambiar_estado(request, id):
         else:
             messages.error(request, "Estado no válido.")
     return redirect(request.META.get('HTTP_REFERER') or 'viaticos_admin')
+
+
+# ──────────────────────────────────────────────
+# PWA (PROGRESSIVE WEB APP)
+# ──────────────────────────────────────────────
+
+def offline_view(request):
+    """Página fallback cuando el usuario o conductor pierde la conexión."""
+    return render(request, 'offline.html')
+
+
+def manifest_view(request):
+    """Sirve el manifest.json con el MIME type correcto para PWA."""
+    manifest_path = os.path.join(settings.BASE_DIR, 'static', 'manifest.json')
+    if os.path.exists(manifest_path):
+        with open(manifest_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        return HttpResponse(content, content_type='application/manifest+json')
+    return HttpResponse('{}', content_type='application/manifest+json')
+
+
+def service_worker_view(request):
+    """Sirve el Service Worker sw.js con scope root (/) y header Service-Worker-Allowed."""
+    sw_path = os.path.join(settings.BASE_DIR, 'static', 'sw.js')
+    if os.path.exists(sw_path):
+        with open(sw_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        response = HttpResponse(content, content_type='application/javascript')
+        response['Service-Worker-Allowed'] = '/'
+        return response
+    return HttpResponse('', content_type='application/javascript')
 
