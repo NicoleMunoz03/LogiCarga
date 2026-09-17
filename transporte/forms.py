@@ -2,7 +2,7 @@ import re
 from datetime import date
 from django import forms
 from django.core.exceptions import ValidationError
-from .models import Vehiculo, Conductor, Viaje, CargaCombustible, Mantenimiento
+from .models import Vehiculo, Conductor, Viaje, CargaCombustible, Mantenimiento, Incidente, Viatico
 
 
 class VehiculoForm(forms.ModelForm):
@@ -336,7 +336,7 @@ class ViajeForm(forms.ModelForm):
 class CargaCombustibleForm(forms.ModelForm):
     class Meta:
         model = CargaCombustible
-        fields = ['viaje', 'vehiculo', 'conductor', 'litros_cargados', 'costo_total', 'ciudad', 'fecha_carga']
+        fields = ['viaje', 'vehiculo', 'conductor', 'litros_cargados', 'costo_total', 'ciudad', 'fecha_carga', 'foto_evidencia']
         widgets = {
             'viaje': forms.Select(attrs={
                 'name': 'viaje',
@@ -374,6 +374,11 @@ class CargaCombustibleForm(forms.ModelForm):
                 'type': 'date',
                 'class': 'w-full h-11 px-3 rounded-lg border border-outline-variant bg-white font-tabular-data text-tabular-data text-primary focus:ring-2 focus:ring-secondary focus:border-secondary transition-colors',
             }, format='%Y-%m-%d'),
+            'foto_evidencia': forms.FileInput(attrs={
+                'id': 'foto_evidencia',
+                'class': 'block w-full text-body-sm text-on-surface file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-label-sm file:font-semibold file:bg-primary file:text-on-primary hover:file:bg-primary-container file:cursor-pointer cursor-pointer border border-outline-variant rounded-lg p-1 bg-white',
+                'accept': 'image/*',
+            }),
         }
 
     def clean_litros_cargados(self):
@@ -519,3 +524,138 @@ class MantenimientoForm(forms.ModelForm):
             raise ValidationError({'fecha_realizada': "Debe registrar la fecha en la que se realizó el mantenimiento para marcarlo como Finalizado."})
 
         return cleaned_data
+
+
+INPUT_CLASS = (
+    'block w-full h-10 px-3 rounded-lg border border-outline-variant '
+    'bg-surface-container-lowest text-on-surface font-body-md text-body-md '
+    'focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/15 transition-all'
+)
+
+SELECT_CLASS = (
+    'block w-full h-10 px-3 rounded-lg border border-outline-variant '
+    'bg-surface-container-lowest text-on-surface font-body-md text-body-md '
+    'focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/15 transition-all cursor-pointer'
+)
+
+TEXTAREA_CLASS = (
+    'block w-full px-3 py-2.5 rounded-lg border border-outline-variant '
+    'bg-surface-container-lowest text-on-surface font-body-md text-body-md '
+    'focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/15 transition-all resize-none'
+)
+
+
+class IncidenteForm(forms.ModelForm):
+    class Meta:
+        model = Incidente
+        fields = ['viaje', 'tipo_incidente', 'lugar', 'fecha_incidente', 'descripcion', 'foto_evidencia']
+        widgets = {
+            'viaje': forms.Select(attrs={
+                'id': 'inc_viaje',
+                'class': SELECT_CLASS,
+            }),
+            'tipo_incidente': forms.Select(attrs={
+                'id': 'inc_tipo',
+                'class': SELECT_CLASS,
+            }),
+            'lugar': forms.TextInput(attrs={
+                'id': 'inc_lugar',
+                'placeholder': 'Ej. Sector La Línea, Cajamarca',
+                'class': INPUT_CLASS,
+            }),
+            'fecha_incidente': forms.DateTimeInput(
+                format='%Y-%m-%dT%H:%M',
+                attrs={
+                    'id': 'inc_fecha',
+                    'type': 'datetime-local',
+                    'class': INPUT_CLASS,
+                }
+            ),
+            'descripcion': forms.Textarea(attrs={
+                'id': 'inc_descripcion',
+                'rows': 4,
+                'placeholder': 'Describa con detalle lo ocurrido, las condiciones y las medidas tomadas...',
+                'class': TEXTAREA_CLASS,
+            }),
+            'foto_evidencia': forms.FileInput(attrs={
+                'id': 'inc_foto',
+                'class': 'block w-full text-body-sm text-on-surface file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-label-sm file:font-semibold file:bg-primary file:text-on-primary hover:file:bg-primary-container file:cursor-pointer cursor-pointer border border-outline-variant rounded-lg p-1 bg-surface-container-lowest',
+                'accept': 'image/*',
+            }),
+        }
+        labels = {
+            'viaje': 'Viaje Asociado',
+            'tipo_incidente': 'Tipo de Incidente',
+            'lugar': 'Lugar del Incidente',
+            'fecha_incidente': 'Fecha y Hora',
+            'descripcion': 'Descripción Detallada',
+            'foto_evidencia': 'Foto de Evidencia (Opcional)',
+        }
+
+    def clean_lugar(self):
+        lugar = self.cleaned_data.get('lugar', '').strip()
+        if len(lugar) < 3:
+            raise ValidationError('El lugar debe tener al menos 3 caracteres.')
+        return lugar
+
+    def clean_descripcion(self):
+        desc = self.cleaned_data.get('descripcion', '').strip()
+        if len(desc) < 10:
+            raise ValidationError('La descripción debe tener al menos 10 caracteres.')
+        return desc
+
+
+class ViaticoForm(forms.ModelForm):
+    class Meta:
+        model = Viatico
+        fields = ['viaje', 'tipo_gasto', 'monto', 'descripcion', 'fecha_gasto', 'comprobante_foto']
+        widgets = {
+            'viaje': forms.Select(attrs={
+                'id': 'vtc_viaje',
+                'class': SELECT_CLASS,
+            }),
+            'tipo_gasto': forms.Select(attrs={
+                'id': 'vtc_tipo',
+                'class': SELECT_CLASS,
+            }),
+            'monto': forms.NumberInput(attrs={
+                'id': 'vtc_monto',
+                'placeholder': '0',
+                'min': '1',
+                'step': '100',
+                'class': INPUT_CLASS,
+            }),
+            'descripcion': forms.TextInput(attrs={
+                'id': 'vtc_descripcion',
+                'placeholder': 'Ej. Peaje en la salida de Bogotá, factura adjunta',
+                'class': INPUT_CLASS,
+            }),
+            'fecha_gasto': forms.DateInput(
+                format='%Y-%m-%d',
+                attrs={
+                    'id': 'vtc_fecha',
+                    'type': 'date',
+                    'class': INPUT_CLASS,
+                }
+            ),
+            'comprobante_foto': forms.FileInput(attrs={
+                'id': 'vtc_comprobante',
+                'class': 'block w-full text-body-sm text-on-surface file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-label-sm file:font-semibold file:bg-primary file:text-on-primary hover:file:bg-primary-container file:cursor-pointer cursor-pointer border border-outline-variant rounded-lg p-1 bg-surface-container-lowest',
+                'accept': 'image/*',
+            }),
+        }
+        labels = {
+            'viaje': 'Viaje Asociado',
+            'tipo_gasto': 'Tipo de Gasto',
+            'monto': 'Valor (COP)',
+            'descripcion': 'Descripción / Observaciones',
+            'fecha_gasto': 'Fecha del Gasto',
+            'comprobante_foto': 'Comprobante / Factura (Opcional)',
+        }
+
+    def clean_monto(self):
+        monto = self.cleaned_data.get('monto')
+        if monto is not None and monto <= 0:
+            raise ValidationError('El monto debe ser mayor a $0 COP.')
+        return monto
+

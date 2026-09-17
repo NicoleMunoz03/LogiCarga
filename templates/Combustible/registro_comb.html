@@ -43,7 +43,7 @@
   {% endif %}
 
   <!-- MAIN FORM CARD -->
-  <form method="POST" action="" class="bg-surface-container-lowest border border-outline-variant/40 rounded-xl shadow-xs overflow-hidden">
+  <form method="POST" action="" enctype="multipart/form-data" class="bg-surface-container-lowest border border-outline-variant/40 rounded-xl shadow-xs overflow-hidden">
     {% csrf_token %}
     <!-- Card Header -->
     <div class="px-8 py-5 border-b border-outline-variant/30 bg-surface-bright flex flex-wrap items-center justify-between gap-4">
@@ -222,6 +222,19 @@
               <span class="material-symbols-outlined text-[20px]">calendar_today</span>
             </div>
             <input name="fecha_carga" id="fecha" class="w-full h-11 pl-11 pr-10 rounded-lg border border-outline-variant bg-white font-tabular-data text-tabular-data text-primary font-medium focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-colors" type="date" value="{{ form.fecha_carga.value|default:'' }}" required/>
+          </div>
+        </div>
+
+        <!-- 8. Foto / Comprobante de Combustible -->
+        <div class="md:col-span-2 space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label class="font-label-md text-label-md font-semibold text-primary flex items-center gap-1" for="foto_evidencia">
+              <span>Foto de Factura / Ticket de Surtidor (Opcional)</span>
+            </label>
+            <span class="font-label-sm text-label-sm text-on-surface-variant">Para validación de auditoría</span>
+          </div>
+          <div class="relative">
+            <input name="foto_evidencia" id="foto_evidencia" type="file" accept="image/*" class="block w-full text-body-sm text-on-surface file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-label-sm file:font-semibold file:bg-primary file:text-on-primary hover:file:bg-primary-container file:cursor-pointer cursor-pointer border border-outline-variant rounded-lg p-1.5 bg-white"/>
           </div>
         </div>
       </div>

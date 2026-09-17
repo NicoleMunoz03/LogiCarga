@@ -138,23 +138,35 @@
       color: #0b1c30;
       border-bottom: 1px solid rgba(196, 198, 207, 0.25);
     }
+    /* Sidebar drawer smooth transition */
+    #sidebar-drawer {
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    #sidebar-backdrop {
+      transition: opacity 0.3s ease;
+    }
   </style>
 
   {% block extra_head %}{% endblock %}
 </head>
 <body class="h-full bg-background text-on-surface antialiased overflow-x-hidden font-body-md text-body-md">
 
+  <!-- MOBILE BACKDROP OVERLAY -->
+  <div id="sidebar-backdrop"
+       class="fixed inset-0 bg-black/50 z-40 opacity-0 pointer-events-none lg:hidden"
+       aria-hidden="true"></div>
+
   <!-- SIDEBAR COMPONENT -->
   {% include "includes/sidebar.html" %}
 
-  <!-- MAIN WRAPPER -->
-  <div class="ml-64 min-h-screen flex flex-col bg-background">
+  <!-- MAIN WRAPPER: responsive margin — lg: sidebar visible, mobile: full width -->
+  <div class="lg:ml-64 ml-0 min-h-screen flex flex-col bg-background transition-all duration-300">
     <!-- NAVBAR COMPONENT -->
     {% include "includes/navbar.html" %}
 
     <!-- GLOBAL MESSAGES -->
     {% if messages %}
-    <div class="px-8 pt-4 space-y-2">
+    <div class="px-4 sm:px-6 lg:px-8 pt-4 space-y-2">
       {% for message in messages %}
       <div class="p-3.5 rounded-lg border flex items-center justify-between shadow-xs transition-all {% if message.tags == 'error' %}bg-error-container/30 border-error/40 text-error{% elif message.tags == 'success' %}bg-emerald-50 border-emerald-200 text-emerald-900{% elif message.tags == 'warning' %}bg-amber-50 border-amber-200 text-amber-900{% else %}bg-blue-50 border-blue-200 text-blue-900{% endif %}">
         <div class="flex items-center gap-2.5 font-body-md text-body-md">
@@ -169,10 +181,46 @@
     {% endif %}
 
     <!-- MAIN BODY CONTENT -->
-    <main class="flex-1 p-8 space-y-8 max-w-7xl">
+    <main class="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 lg:space-y-8 max-w-7xl w-full">
       {% block content %}{% endblock %}
     </main>
   </div>
+
+  <!-- Mobile Sidebar Control Script -->
+  <script>
+    const sidebarDrawer = document.getElementById('sidebar-drawer');
+    const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+
+    function openSidebar() {
+      sidebarDrawer.classList.remove('-translate-x-full');
+      sidebarDrawer.classList.add('translate-x-0');
+      sidebarBackdrop.classList.remove('opacity-0', 'pointer-events-none');
+      sidebarBackdrop.classList.add('opacity-100');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeSidebar() {
+      sidebarDrawer.classList.add('-translate-x-full');
+      sidebarDrawer.classList.remove('translate-x-0');
+      sidebarBackdrop.classList.add('opacity-0', 'pointer-events-none');
+      sidebarBackdrop.classList.remove('opacity-100');
+      document.body.style.overflow = '';
+    }
+
+    sidebarBackdrop.addEventListener('click', closeSidebar);
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeSidebar();
+    });
+
+    window.addEventListener('resize', function() {
+      if (window.innerWidth >= 1024) {
+        sidebarBackdrop.classList.add('opacity-0', 'pointer-events-none');
+        sidebarBackdrop.classList.remove('opacity-100');
+        document.body.style.overflow = '';
+      }
+    });
+  </script>
 
   {% block extra_scripts %}{% endblock %}
 </body>

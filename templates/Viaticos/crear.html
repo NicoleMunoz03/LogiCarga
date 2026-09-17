@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}LogiCarga – Registrar Viático{% endblock %}
+
+{% block content %}
+<div class="space-y-6 max-w-3xl">
+
+  <!-- ── ENCABEZADO ── -->
+  <div class="flex items-center gap-3">
+    <a href="{% url 'mis_viaticos' %}"
+       class="p-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-primary transition-colors">
+      <span class="material-symbols-outlined text-[22px]">arrow_back</span>
+    </a>
+    <div>
+      <h1 class="font-headline-xl text-headline-xl text-primary tracking-tight font-bold">Registrar Viático</h1>
+      <p class="font-body-md text-body-md text-on-surface-variant mt-0.5">Registre un gasto realizado durante uno de sus viajes asignados</p>
+    </div>
+  </div>
+
+  <!-- ── ALERTA INFORMATIVA ── -->
+  <div class="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-xl p-4">
+    <span class="material-symbols-outlined text-blue-600 text-[22px] shrink-0 mt-0.5">info</span>
+    <div>
+      <p class="font-label-lg text-label-lg text-blue-800 font-semibold">Documentación requerida</p>
+      <p class="font-body-sm text-body-sm text-blue-700 mt-0.5">
+        Para montos superiores a $50,000 COP, conserve la factura fiscal original con NIT legible.
+        Los gastos sin soporte podrían ser rechazados por el área de administración.
+      </p>
+    </div>
+  </div>
+
+  <!-- ── FORMULARIO ── -->
+  <div class="bg-surface-container-lowest border border-outline-variant/40 rounded-xl shadow-sm overflow-hidden">
+
+    <div class="px-6 py-4 border-b border-outline-variant/30 bg-surface-bright">
+      <h2 class="font-headline-sm text-headline-sm font-semibold text-primary flex items-center gap-2">
+        <span class="material-symbols-outlined text-[20px]">receipt_long</span>
+        Datos del Gasto
+      </h2>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" class="p-6 space-y-5" novalidate>
+      {% csrf_token %}
+
+      <!-- Viaje -->
+      <div>
+        <label for="{{ form.viaje.id_for_label }}" class="block font-label-lg text-label-lg text-on-surface mb-1.5">
+          {{ form.viaje.label }} <span class="text-error">*</span>
+        </label>
+        {% if viajes %}
+          {{ form.viaje }}
+        {% else %}
+          <div class="h-10 flex items-center px-3 rounded-lg border border-outline-variant bg-surface-container-low text-on-surface-variant font-body-md text-body-md">
+            No tienes viajes asignados actualmente
+          </div>
+        {% endif %}
+        {% if form.viaje.errors %}
+          <p class="mt-1 font-body-sm text-body-sm text-error">{{ form.viaje.errors|join:", " }}</p>
+        {% endif %}
+      </div>
+
+      <!-- Tipo de gasto + Monto (2 columnas) -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+        <div>
+          <label for="{{ form.tipo_gasto.id_for_label }}" class="block font-label-lg text-label-lg text-on-surface mb-1.5">
+            {{ form.tipo_gasto.label }} <span class="text-error">*</span>
+          </label>
+          {{ form.tipo_gasto }}
+          {% if form.tipo_gasto.errors %}
+            <p class="mt-1 font-body-sm text-body-sm text-error">{{ form.tipo_gasto.errors|join:", " }}</p>
+          {% endif %}
+        </div>
+
+        <div>
+          <label for="{{ form.monto.id_for_label }}" class="block font-label-lg text-label-lg text-on-surface mb-1.5">
+            {{ form.monto.label }} <span class="text-error">*</span>
+          </label>
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 font-tabular-data text-tabular-data text-on-surface-variant pointer-events-none">$</span>
+            <input type="number" name="{{ form.monto.html_name }}" id="{{ form.monto.id_for_label }}"
+                   placeholder="0" min="1" step="100"
+                   value="{{ form.monto.value|default_if_none:'' }}"
+                   class="block w-full h-10 pl-7 pr-16 rounded-lg border border-outline-variant bg-surface-container-lowest text-on-surface font-tabular-data text-tabular-data focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/15 transition-all">
+            <span class="absolute right-3 top-1/2 -translate-y-1/2 font-label-sm text-label-sm text-on-surface-variant pointer-events-none">COP</span>
+          </div>
+          {% if form.monto.errors %}
+            <p class="mt-1 font-body-sm text-body-sm text-error">{{ form.monto.errors|join:", " }}</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Fecha del gasto -->
+      <div>
+        <label for="{{ form.fecha_gasto.id_for_label }}" class="block font-label-lg text-label-lg text-on-surface mb-1.5">
+          {{ form.fecha_gasto.label }} <span class="text-error">*</span>
+        </label>
+        {{ form.fecha_gasto }}
+        {% if form.fecha_gasto.errors %}
+          <p class="mt-1 font-body-sm text-body-sm text-error">{{ form.fecha_gasto.errors|join:", " }}</p>
+        {% endif %}
+      </div>
+
+      <!-- Descripción -->
+      <div>
+        <label for="{{ form.descripcion.id_for_label }}" class="block font-label-lg text-label-lg text-on-surface mb-1.5">
+          {{ form.descripcion.label }}
+          <span class="text-on-surface-variant font-normal">(opcional)</span>
+        </label>
+        {{ form.descripcion }}
+        {% if form.descripcion.errors %}
+          <p class="mt-1 font-body-sm text-body-sm text-error">{{ form.descripcion.errors|join:", " }}</p>
+        {% endif %}
+      </div>
+
+      <!-- Foto / Factura de Comprobante -->
+      <div>
+        <label for="{{ form.comprobante_foto.id_for_label }}" class="block font-label-lg text-label-lg text-on-surface mb-1.5">
+          {{ form.comprobante_foto.label }}
+        </label>
+        {{ form.comprobante_foto }}
+        <p class="mt-1 font-body-sm text-body-sm text-on-surface-variant">
+          Adjunte foto o escaneo de la factura o recibo de caja para aprobación de reembolso.
+        </p>
+        {% if form.comprobante_foto.errors %}
+          <p class="mt-1 font-body-sm text-body-sm text-error">{{ form.comprobante_foto.errors|join:", " }}</p>
+        {% endif %}
+      </div>
+
+
+      <!-- Errores generales -->
+      {% if form.non_field_errors %}
+      <div class="p-3.5 rounded-lg border bg-error-container/30 border-error/40 text-error font-body-sm text-body-sm flex items-center gap-2">
+        <span class="material-symbols-outlined text-[18px]">error</span>
+        {{ form.non_field_errors|join:" " }}
+      </div>
+      {% endif %}
+
+      <!-- Botones -->
+      <div class="flex flex-col sm:flex-row items-center gap-3 pt-2 border-t border-outline-variant/30">
+        <button type="submit"
+                class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary-container text-on-primary py-2.5 px-6 rounded-lg font-label-lg text-label-lg transition-colors shadow-sm">
+          <span class="material-symbols-outlined text-[18px]">save</span>
+          Guardar Viático
+        </button>
+        <a href="{% url 'mis_viaticos' %}"
+           class="w-full sm:w-auto inline-flex items-center justify-center gap-2 border border-outline-variant text-on-surface-variant hover:text-on-surface hover:bg-surface-container py-2.5 px-5 rounded-lg font-label-lg text-label-lg transition-colors">
+          Cancelar
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

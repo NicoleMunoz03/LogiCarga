@@ -17,6 +17,7 @@ urlpatterns = [
     path('vehiculos/', views.vehiculos_lista, name='vehiculos_lista'),
     path('vehiculos/crear/', views.vehiculo_crear, name='vehiculo_crear'),
     path('vehiculos/<int:id>/', views.vehiculo_detalle, name='vehiculo_detalle'),
+    path('vehiculos/<int:id>/estado/', views.vehiculo_cambiar_estado, name='vehiculo_cambiar_estado'),
 
     # Conductores (Administrador)
     path('conductores/', views.conductores_lista, name='conductores_lista'),
@@ -32,14 +33,36 @@ urlpatterns = [
     path('combustible/', views.combustible_lista, name='combustible_lista'),
     path('combustible/crear/', views.combustible_crear, name='combustible_crear'),
     path('combustible/<int:id>/', views.combustible_detalle, name='combustible_detalle'),
+    path('combustible/<int:id>/estado/', views.combustible_cambiar_estado, name='combustible_cambiar_estado'),
 
     # Mantenimiento (HU-008) - Administrador
     path('mantenimientos/', views.mantenimiento_lista, name='mantenimiento_lista'),
     path('mantenimientos/crear/', views.mantenimiento_crear, name='mantenimiento_crear'),
     path('mantenimientos/<int:id>/', views.mantenimiento_detalle, name='mantenimiento_detalle'),
+    path('mantenimientos/<int:id>/estado/', views.mantenimiento_cambiar_estado, name='mantenimiento_cambiar_estado'),
+
 
     # Reportes (HU-009, HU-010) - Administrador
     path('reportes/', views.reportes_index, name='reportes_index'),
     path('reportes/consumo/', views.reporte_consumo, name='reporte_consumo'),
     path('reportes/operacional/', views.reporte_operacional, name='reporte_operacional'),
+
+    # Incidentes (Conductor)
+    path('incidentes/', views.mis_incidentes, name='mis_incidentes'),
+    path('incidentes/reportar/', views.incidente_reportar, name='incidente_reportar'),
+    path('incidentes/<int:id>/', views.incidente_detalle, name='incidente_detalle'),
+
+    # Incidentes (Administrador)
+    path('incidentes/admin/', views.incidentes_admin, name='incidentes_admin'),
+    path('incidentes/admin/<int:id>/estado/', views.incidente_cambiar_estado, name='incidente_cambiar_estado'),
+
+    # Viáticos (Conductor)
+    path('viaticos/', views.mis_viaticos, name='mis_viaticos'),
+    path('viaticos/crear/', views.viatico_crear, name='viatico_crear'),
+    path('viaticos/<int:id>/', views.viatico_detalle, name='viatico_detalle'),
+
+    # Viáticos (Administrador)
+    path('viaticos/admin/', views.viaticos_admin, name='viaticos_admin'),
+    path('viaticos/admin/<int:id>/estado/', views.viatico_cambiar_estado, name='viatico_cambiar_estado'),
 ]
+

@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}LogiCarga – Detalle Incidente INC-{{ incidente.id|stringformat:"04d" }}{% endblock %}
+
+{% block content %}
+<div class="space-y-6 max-w-4xl">
+
+  <!-- ── NAVEGACIÓN REGRESO ── -->
+  <div class="flex items-center gap-3">
+    <a href="{% url 'mis_incidentes' %}"
+       class="p-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-primary transition-colors">
+      <span class="material-symbols-outlined text-[22px]">arrow_back</span>
+    </a>
+    <div>
+      <h1 class="font-headline-xl text-headline-xl text-primary tracking-tight font-bold">
+        Incidente INC-{{ incidente.id|stringformat:"04d" }}
+      </h1>
+      <p class="font-body-md text-body-md text-on-surface-variant mt-0.5">
+        Detalle completo del incidente reportado en ruta
+      </p>
+    </div>
+  </div>
+
+  <!-- ── ESTADO Y TIPO DESTACADOS ── -->
+  <div class="flex flex-wrap items-center gap-3">
+    <!-- Estado -->
+    {% if incidente.estado == 'Resuelto' %}
+    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full font-label-lg text-label-lg bg-emerald-50 text-emerald-700 border border-emerald-300 shadow-xs">
+      <span class="material-symbols-outlined text-[17px]">check_circle</span> Resuelto
+    </span>
+    {% elif incidente.estado == 'En Revisión' %}
+    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full font-label-lg text-label-lg bg-amber-50 text-amber-800 border border-amber-300 shadow-xs">
+      <span class="w-2 h-2 rounded-full bg-amber-500 inline-block animate-pulse"></span> En Revisión
+    </span>
+    {% else %}
+    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full font-label-lg text-label-lg bg-blue-50 text-blue-700 border border-blue-200 shadow-xs">
+      <span class="w-2 h-2 rounded-full bg-blue-600 inline-block animate-pulse"></span> Reportado
+    </span>
+    {% endif %}
+
+    <!-- Tipo -->
+    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full font-label-lg text-label-lg bg-surface-container text-on-surface border border-outline-variant/40 shadow-xs">
+      <span class="material-symbols-outlined text-[17px]">build_circle</span>
+      {{ incidente.tipo_incidente }}
+    </span>
+  </div>
+
+  <!-- ── TARJETA PRINCIPAL ── -->
+  <div class="bg-surface-container-lowest border border-outline-variant/40 rounded-xl shadow-sm overflow-hidden">
+
+    <div class="px-6 py-4 border-b border-outline-variant/30 bg-surface-bright">
+      <h2 class="font-headline-sm text-headline-sm font-semibold text-primary flex items-center gap-2">
+        <span class="material-symbols-outlined text-[20px]">info</span>
+        Información del Incidente
+      </h2>
+    </div>
+
+    <div class="p-6 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5">
+
+      <!-- Viaje -->
+      <div>
+        <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider block mb-1">Viaje</span>
+        <div class="font-label-lg text-label-lg text-primary font-semibold">VJ-{{ incidente.viaje.id|stringformat:"05d" }}</div>
+        <div class="font-body-sm text-body-sm text-on-surface-variant">{{ incidente.viaje.ciudad_origen }} → {{ incidente.viaje.ciudad_destino }}</div>
+      </div>
+
+      <!-- Vehículo -->
+      <div>
+        <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider block mb-1">Vehículo</span>
+        <div class="font-label-lg text-label-lg text-primary font-semibold">{{ incidente.viaje.vehiculo.placa }}</div>
+        <div class="font-body-sm text-body-sm text-on-surface-variant">{{ incidente.viaje.vehiculo.modelo }}</div>
+      </div>
+
+      <!-- Fecha del incidente -->
+      <div>
+        <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider block mb-1">Fecha y Hora</span>
+        <div class="font-label-lg text-label-lg text-on-surface font-semibold flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-[17px] text-on-surface-variant">calendar_today</span>
+          {{ incidente.fecha_incidente|date:"d M Y" }} – {{ incidente.fecha_incidente|time:"H:i" }}
+        </div>
+      </div>
+
+      <!-- Lugar -->
+      <div>
+        <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider block mb-1">Lugar del Incidente</span>
+        <div class="font-label-lg text-label-lg text-on-surface font-semibold flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-[17px] text-on-surface-variant">location_on</span>
+          {{ incidente.lugar }}
+        </div>
+      </div>
+
+      <!-- Fecha de reporte -->
+      <div>
+        <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider block mb-1">Fecha de Reporte</span>
+        <div class="font-body-md text-body-md text-on-surface">{{ incidente.fecha_creacion|date:"d M Y – H:i" }}</div>
+      </div>
+
+      <!-- Conductor -->
+      <div>
+        <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider block mb-1">Conductor</span>
+        <div class="font-body-md text-body-md text-on-surface">{{ incidente.viaje.conductor.nombre_completo }}</div>
+      </div>
+
+      <!-- Descripción (ancho completo) -->
+      <div class="sm:col-span-2">
+        <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider block mb-2">Descripción del Incidente</span>
+        <div class="bg-surface-container-low border border-outline-variant/30 rounded-lg px-4 py-3 font-body-md text-body-md text-on-surface leading-relaxed whitespace-pre-line">
+          {{ incidente.descripcion }}
+        </div>
+      </div>
+
+      <!-- Evidencia Fotográfica -->
+      {% if incidente.foto_evidencia %}
+      <div class="sm:col-span-2">
+        <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider block mb-2">Foto de Evidencia</span>
+        <div class="rounded-xl overflow-hidden border border-outline-variant/30 bg-black/5 flex items-center justify-center max-w-md">
+          <a href="{{ incidente.foto_evidencia.url }}" target="_blank" title="Clic para ampliar">
+            <img src="{{ incidente.foto_evidencia.url }}" alt="Evidencia de incidente" class="max-h-64 object-contain hover:scale-102 transition-transform cursor-zoom-in">
+          </a>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Dictamen / Respuesta Administrativa -->
+      {% if incidente.respuesta_admin %}
+      <div class="sm:col-span-2">
+        <span class="font-label-md text-label-md text-secondary uppercase tracking-wider block mb-2 font-bold flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-[18px]">verified</span>
+          Dictamen de Operaciones
+        </span>
+        <div class="bg-primary-container/10 border border-secondary/30 rounded-lg px-4 py-3 font-body-md text-body-md text-primary leading-relaxed whitespace-pre-line">
+          {{ incidente.respuesta_admin }}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ── ACCIONES ── -->
+  <div class="flex flex-col sm:flex-row items-center gap-3">
+    <a href="{% url 'mis_incidentes' %}"
+       class="w-full sm:w-auto inline-flex items-center justify-center gap-2 border border-outline-variant text-on-surface-variant hover:text-on-surface hover:bg-surface-container py-2.5 px-5 rounded-lg font-label-lg text-label-lg transition-colors">
+      <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+      Volver al listado
+    </a>
+    <a href="{% url 'incidente_reportar' %}"
+       class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary-container text-on-primary py-2.5 px-5 rounded-lg font-label-lg text-label-lg transition-colors shadow-sm">
+      <span class="material-symbols-outlined text-[18px]">add</span>
+      Reportar nuevo incidente
+    </a>
+  </div>
+
+</div>
+{% endblock %}

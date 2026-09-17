@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}LogiCarga – Reportar Incidente{% endblock %}
+
+{% block content %}
+<div class="space-y-6 max-w-3xl">
+
+  <!-- ── ENCABEZADO ── -->
+  <div class="flex items-center gap-3">
+    <a href="{% url 'mis_incidentes' %}"
+       class="p-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-primary transition-colors">
+      <span class="material-symbols-outlined text-[22px]">arrow_back</span>
+    </a>
+    <div>
+      <h1 class="font-headline-xl text-headline-xl text-primary tracking-tight font-bold">Reportar Incidente</h1>
+      <p class="font-body-md text-body-md text-on-surface-variant mt-0.5">Registre la novedad ocurrida durante uno de sus viajes asignados</p>
+    </div>
+  </div>
+
+  <!-- ── ALERTA INFORMATIVA ── -->
+  <div class="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl p-4">
+    <span class="material-symbols-outlined text-amber-600 text-[22px] shrink-0 mt-0.5">info</span>
+    <div>
+      <p class="font-label-lg text-label-lg text-amber-800 font-semibold">Reporte con precisión y veracidad</p>
+      <p class="font-body-sm text-body-sm text-amber-700 mt-0.5">
+        La descripción detallada del incidente permite una gestión oportuna por parte del equipo de despacho. 
+        En emergencias activas, contacte primero a la central de operaciones.
+      </p>
+    </div>
+  </div>
+
+  <!-- ── FORMULARIO ── -->
+  <div class="bg-surface-container-lowest border border-outline-variant/40 rounded-xl shadow-sm overflow-hidden">
+
+    <div class="px-6 py-4 border-b border-outline-variant/30 bg-surface-bright">
+      <h2 class="font-headline-sm text-headline-sm font-semibold text-primary flex items-center gap-2">
+        <span class="material-symbols-outlined text-[20px]">edit_note</span>
+        Datos del Incidente
+      </h2>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" class="p-6 space-y-5" novalidate>
+      {% csrf_token %}
+
+      <!-- Viaje -->
+      <div>
+        <label for="{{ form.viaje.id_for_label }}" class="block font-label-lg text-label-lg text-on-surface mb-1.5">
+          {{ form.viaje.label }} <span class="text-error">*</span>
+        </label>
+        {% if viajes %}
+          {{ form.viaje }}
+        {% else %}
+          <div class="h-10 flex items-center px-3 rounded-lg border border-outline-variant bg-surface-container-low text-on-surface-variant font-body-md text-body-md">
+            No tienes viajes asignados actualmente
+          </div>
+        {% endif %}
+        {% if form.viaje.errors %}
+          <p class="mt-1 font-body-sm text-body-sm text-error">{{ form.viaje.errors|join:", " }}</p>
+        {% endif %}
+      </div>
+
+      <!-- Tipo de Incidente + Lugar (2 columnas en md) -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+        <div>
+          <label for="{{ form.tipo_incidente.id_for_label }}" class="block font-label-lg text-label-lg text-on-surface mb-1.5">
+            {{ form.tipo_incidente.label }} <span class="text-error">*</span>
+          </label>
+          {{ form.tipo_incidente }}
+          {% if form.tipo_incidente.errors %}
+            <p class="mt-1 font-body-sm text-body-sm text-error">{{ form.tipo_incidente.errors|join:", " }}</p>
+          {% endif %}
+        </div>
+
+        <div>
+          <label for="{{ form.lugar.id_for_label }}" class="block font-label-lg text-label-lg text-on-surface mb-1.5">
+            {{ form.lugar.label }} <span class="text-error">*</span>
+          </label>
+          {{ form.lugar }}
+          {% if form.lugar.errors %}
+            <p class="mt-1 font-body-sm text-body-sm text-error">{{ form.lugar.errors|join:", " }}</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Fecha y hora -->
+      <div>
+        <label for="{{ form.fecha_incidente.id_for_label }}" class="block font-label-lg text-label-lg text-on-surface mb-1.5">
+          {{ form.fecha_incidente.label }} <span class="text-error">*</span>
+        </label>
+        {{ form.fecha_incidente }}
+        {% if form.fecha_incidente.errors %}
+          <p class="mt-1 font-body-sm text-body-sm text-error">{{ form.fecha_incidente.errors|join:", " }}</p>
+        {% endif %}
+      </div>
+
+      <!-- Descripción -->
+      <div>
+        <label for="{{ form.descripcion.id_for_label }}" class="block font-label-lg text-label-lg text-on-surface mb-1.5">
+          {{ form.descripcion.label }} <span class="text-error">*</span>
+        </label>
+        {{ form.descripcion }}
+        <p class="mt-1 font-body-sm text-body-sm text-on-surface-variant">
+          Incluya condiciones del momento, medidas tomadas e impacto en la operación.
+        </p>
+        {% if form.descripcion.errors %}
+          <p class="mt-1 font-body-sm text-body-sm text-error">{{ form.descripcion.errors|join:", " }}</p>
+        {% endif %}
+      </div>
+
+      <!-- Foto de Evidencia -->
+      <div>
+        <label for="{{ form.foto_evidencia.id_for_label }}" class="block font-label-lg text-label-lg text-on-surface mb-1.5">
+          {{ form.foto_evidencia.label }}
+        </label>
+        {{ form.foto_evidencia }}
+        <p class="mt-1 font-body-sm text-body-sm text-on-surface-variant">
+          Adjunte una fotografía del hecho, daño o estado del vehículo/vía para agilizar la atención.
+        </p>
+        {% if form.foto_evidencia.errors %}
+          <p class="mt-1 font-body-sm text-body-sm text-error">{{ form.foto_evidencia.errors|join:", " }}</p>
+        {% endif %}
+      </div>
+
+
+      <!-- Errores generales -->
+      {% if form.non_field_errors %}
+      <div class="p-3.5 rounded-lg border bg-error-container/30 border-error/40 text-error font-body-sm text-body-sm flex items-center gap-2">
+        <span class="material-symbols-outlined text-[18px]">error</span>
+        {{ form.non_field_errors|join:" " }}
+      </div>
+      {% endif %}
+
+      <!-- Botones -->
+      <div class="flex flex-col sm:flex-row items-center gap-3 pt-2 border-t border-outline-variant/30">
+        <button type="submit"
+                class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary-container text-on-primary py-2.5 px-6 rounded-lg font-label-lg text-label-lg transition-colors shadow-sm">
+          <span class="material-symbols-outlined text-[18px]">report_problem</span>
+          Enviar Reporte
+        </button>
+        <a href="{% url 'mis_incidentes' %}"
+           class="w-full sm:w-auto inline-flex items-center justify-center gap-2 border border-outline-variant text-on-surface-variant hover:text-on-surface hover:bg-surface-container py-2.5 px-5 rounded-lg font-label-lg text-label-lg transition-colors">
+          Cancelar
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

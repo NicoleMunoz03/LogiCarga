@@ -3,11 +3,13 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import HttpResponseForbidden
-from django.db.models import Sum, Count, Avg
+from django.db.models import Sum, Count, Avg, Q
+from django.utils import timezone
 
-from .models import Vehiculo, Conductor, Viaje, CargaCombustible, Mantenimiento
-from .forms import VehiculoForm, ConductorForm, ViajeForm, CargaCombustibleForm, MantenimientoForm
+from .models import Vehiculo, Conductor, Viaje, CargaCombustible, Mantenimiento, Incidente, Viatico
+from .forms import VehiculoForm, ConductorForm, ViajeForm, CargaCombustibleForm, MantenimientoForm, IncidenteForm, ViaticoForm
 from .decorators import admin_required, conductor_required, is_admin_user, is_conductor_user
+
 
 
 # ──────────────────────────────────────────────
@@ -152,12 +154,73 @@ def vehiculo_crear(request):
 @admin_required
 def vehiculo_detalle(request, id):
     vehiculo = get_object_or_404(Vehiculo, pk=id)
-    viajes_relacionados = Viaje.objects.filter(vehiculo=vehiculo).select_related('conductor')
-    return render(request, 'Vehiculos/gestion_vehiculo.html', {
-        'vehiculos': Vehiculo.objects.all(),
-        'vehiculo_seleccionado': vehiculo,
-        'viajes_relacionados': viajes_relacionados,
+    viajes = Viaje.objects.filter(vehiculo=vehiculo).select_related('conductor').order_by('-fecha_hora_salida')
+    mantenimientos = Mantenimiento.objects.filter(vehiculo=vehiculo).order_by('-fecha_programada')
+    cargas_combustible = CargaCombustible.objects.filter(vehiculo=vehiculo).select_related('conductor', 'viaje').order_by('-fecha_carga')
+    incidentes = Incidente.objects.filter(viaje__vehiculo=vehiculo).select_related('viaje', 'viaje__conductor').order_by('-fecha_incidente')
+
+    total_viajes = viajes.count()
+    viajes_finalizados = viajes.filter(estado='Finalizado').count()
+    viajes_en_curso = viajes.filter(estado='En curso').count()
+    
+    total_km = sum(
+        (v.kilometraje_final - v.kilometraje_inicial)
+        for v in viajes
+        if v.kilometraje_final and v.kilometraje_final > v.kilometraje_inicial
+    )
+    
+    costo_mantenimiento_total = mantenimientos.aggregate(total=Sum('costo'))['total'] or 0
+    costo_combustible_total = cargas_combustible.aggregate(total=Sum('costo_total'))['total'] or 0
+    total_litros = cargas_combustible.aggregate(total=Sum('litros_cargados'))['total'] or 0
+
+    return render(request, 'Vehiculos/detalle.html', {
+        'vehiculo': vehiculo,
+        'viajes': viajes,
+        'mantenimientos': mantenimientos,
+        'cargas_combustible': cargas_combustible,
+        'incidentes': incidentes,
+        'total_viajes': total_viajes,
+        'viajes_finalizados': viajes_finalizados,
+        'viajes_en_curso': viajes_en_curso,
+        'total_km': total_km,
+        'costo_mantenimiento_total': costo_mantenimiento_total,
+        'costo_combustible_total': costo_combustible_total,
+        'total_litros': total_litros,
     })
+
+
+@admin_required
+def vehiculo_cambiar_estado(request, id):
+    """Permite al administrador cambiar el estado operativo del vehículo (Disponible, En viaje, Mantenimiento)."""
+    vehiculo = get_object_or_404(Vehiculo, pk=id)
+    if request.method == 'POST':
+        nuevo_estado = request.POST.get('estado')
+        if nuevo_estado in dict(Vehiculo.ESTADO_CHOICES):
+            vehiculo.estado = nuevo_estado
+            vehiculo.save()
+            messages.success(request, f"Estado del vehículo {vehiculo.placa} actualizado a '{nuevo_estado}'.")
+        else:
+            messages.error(request, "Estado de vehículo no válido.")
+    return redirect(request.META.get('HTTP_REFERER') or 'vehiculo_detalle', id=vehiculo.id)
+
+
+@admin_required
+def mantenimiento_cambiar_estado(request, id):
+    """Permite al administrador cambiar el estado de un mantenimiento (Programado, En Proceso, Finalizado)."""
+    mantenimiento = get_object_or_404(Mantenimiento, pk=id)
+    if request.method == 'POST':
+        nuevo_estado = request.POST.get('estado')
+        if nuevo_estado in dict(Mantenimiento.ESTADO_CHOICES):
+            mantenimiento.estado = nuevo_estado
+            if nuevo_estado == 'Finalizado' and not mantenimiento.fecha_realizada:
+                mantenimiento.fecha_realizada = timezone.now().date()
+            mantenimiento.save()
+            messages.success(request, f"Mantenimiento MNT-{mantenimiento.id} actualizado a '{nuevo_estado}'.")
+        else:
+            messages.error(request, "Estado de mantenimiento no válido.")
+    return redirect(request.META.get('HTTP_REFERER') or 'mantenimiento_lista')
+
+
 
 
 # ──────────────────────────────────────────────
@@ -337,7 +400,7 @@ def combustible_crear(request):
     error_msg = None
 
     if request.method == 'POST':
-        form = CargaCombustibleForm(request.POST)
+        form = CargaCombustibleForm(request.POST, request.FILES)
         if form.is_valid():
             carga = form.save(commit=False)
             
@@ -375,7 +438,7 @@ def combustible_crear(request):
 def combustible_detalle(request, id):
     """
     Detalle de carga de combustible.
-    - Administrador: Puede ver cualquier carga.
+    - Administrador: Puede ver cualquier carga y validarla/rechazarla.
     - Conductor: Únicamente puede ver cargas pertenecientes a sus propios viajes.
     """
     carga = get_object_or_404(CargaCombustible.objects.select_related('viaje', 'vehiculo', 'conductor'), pk=id)
@@ -386,7 +449,26 @@ def combustible_detalle(request, id):
 
     return render(request, 'Combustible/detal_comb.html', {
         'carga': carga,
+        'is_admin': is_admin_user(request.user),
     })
+
+
+@admin_required
+def combustible_cambiar_estado(request, id):
+    """Acción del administrador para aprobar o rechazar una carga de combustible."""
+    carga = get_object_or_404(CargaCombustible, pk=id)
+    if request.method == 'POST':
+        nuevo_estado = request.POST.get('estado')
+        if nuevo_estado in dict(CargaCombustible.ESTADO_CHOICES):
+            carga.estado = nuevo_estado
+            carga.observacion_admin = request.POST.get('observacion_admin', '').strip()
+            carga.fecha_validacion = timezone.now()
+            carga.save()
+            messages.success(request, f"Carga de combustible #{carga.id} actualizada a '{nuevo_estado}'.")
+        else:
+            messages.error(request, "Estado no válido.")
+    return redirect(request.META.get('HTTP_REFERER') or 'combustible_lista')
+
 
 
 # ──────────────────────────────────────────────
@@ -578,3 +660,301 @@ def reporte_operacional(request):
         'viajes_por_vehiculo': viajes_por_vehiculo,
         'viajes_recientes': viajes_recientes,
     })
+
+
+# ──────────────────────────────────────────────
+# INCIDENTES (CONDUCTOR)
+# ──────────────────────────────────────────────
+
+@conductor_required
+def mis_incidentes(request):
+    """
+    Lista los incidentes de los viajes asignados al conductor autenticado.
+    """
+    viajes_conductor = Viaje.objects.filter(usuario_conductor=request.user)
+    incidentes = Incidente.objects.filter(viaje__in=viajes_conductor).select_related('viaje')
+
+    total = incidentes.count()
+    pendientes = incidentes.filter(estado__in=['Reportado', 'En Revisión']).count()
+    resueltos = incidentes.filter(estado='Resuelto').count()
+    tasa_resolucion = round((resueltos / total) * 100) if total > 0 else 0
+
+    return render(request, 'Incidentes/lista.html', {
+        'incidentes': incidentes,
+        'total': total,
+        'pendientes': pendientes,
+        'resueltos': resueltos,
+        'tasa_resolucion': tasa_resolucion,
+    })
+
+
+@conductor_required
+def incidente_reportar(request):
+    """
+    Permite al conductor reportar un nuevo incidente en uno de sus viajes asignados.
+    """
+    viajes = Viaje.objects.filter(usuario_conductor=request.user).select_related('vehiculo')
+
+    if request.method == 'POST':
+        form = IncidenteForm(request.POST, request.FILES)
+        if form.is_valid():
+            incidente = form.save(commit=False)
+            # Validación de seguridad: el viaje debe pertenecer al conductor
+            if incidente.viaje not in viajes:
+                return HttpResponseForbidden('No tiene permiso para reportar incidentes en ese viaje.')
+            incidente.save()
+            messages.success(request, f'Incidente INC-{incidente.id:04d} reportado exitosamente.')
+            return redirect('mis_incidentes')
+        else:
+            messages.error(request, 'Por favor corrija los errores en el formulario.')
+    else:
+        form = IncidenteForm()
+
+    # Limitar el queryset del campo viaje al conductor actual
+    form.fields['viaje'].queryset = viajes
+
+    return render(request, 'Incidentes/reportar.html', {
+        'form': form,
+        'viajes': viajes,
+    })
+
+
+@conductor_required
+def incidente_detalle(request, id):
+    """
+    Muestra el detalle de un incidente. Sólo accesible si el viaje pertenece al conductor.
+    """
+    incidente = get_object_or_404(Incidente.objects.select_related('viaje', 'viaje__vehiculo', 'viaje__conductor'), pk=id)
+    if incidente.viaje.usuario_conductor != request.user:
+        return HttpResponseForbidden('No tiene permiso para ver este incidente.')
+
+    return render(request, 'Incidentes/detalle.html', {
+        'incidente': incidente,
+    })
+
+
+# ──────────────────────────────────────────────
+# VIÁTICOS (CONDUCTOR)
+# ──────────────────────────────────────────────
+
+@conductor_required
+def mis_viaticos(request):
+    """
+    Lista los viáticos registrados por el conductor autenticado.
+    """
+    viajes_conductor = Viaje.objects.filter(usuario_conductor=request.user)
+    viaticos = Viatico.objects.filter(viaje__in=viajes_conductor).select_related('viaje', 'conductor')
+
+    total = viaticos.count()
+    total_monto = viaticos.aggregate(total=Sum('monto'))['total'] or 0
+    pendiente_reembolso = viaticos.filter(estado__in=['En validación', 'Aprobado']).aggregate(total=Sum('monto'))['total'] or 0
+    aprobados = viaticos.filter(estado='Aprobado').count()
+    en_validacion = viaticos.filter(estado='En validación').count()
+
+    return render(request, 'Viaticos/lista.html', {
+        'viaticos': viaticos,
+        'total': total,
+        'total_monto': total_monto,
+        'pendiente_reembolso': pendiente_reembolso,
+        'aprobados': aprobados,
+        'en_validacion': en_validacion,
+    })
+
+
+@conductor_required
+def viatico_crear(request):
+    """
+    Permite al conductor registrar un nuevo viático en uno de sus viajes.
+    """
+    viajes = Viaje.objects.filter(usuario_conductor=request.user).select_related('vehiculo')
+
+    if request.method == 'POST':
+        form = ViaticoForm(request.POST, request.FILES)
+        if form.is_valid():
+            viatico = form.save(commit=False)
+            if viatico.viaje not in viajes:
+                return HttpResponseForbidden('No tiene permiso para registrar viáticos en ese viaje.')
+            # Asignar el conductor del viaje automáticamente
+            viatico.conductor = viatico.viaje.conductor
+            viatico.save()
+            messages.success(request, f'Viático VTC-{viatico.id:04d} registrado exitosamente.')
+            return redirect('mis_viaticos')
+        else:
+            messages.error(request, 'Por favor corrija los errores en el formulario.')
+    else:
+        form = ViaticoForm()
+
+    form.fields['viaje'].queryset = viajes
+
+    return render(request, 'Viaticos/crear.html', {
+        'form': form,
+        'viajes': viajes,
+    })
+
+
+@conductor_required
+def viatico_detalle(request, id):
+    """
+    Muestra el detalle de un viático. Sólo accesible si el viaje pertenece al conductor.
+    """
+    viatico = get_object_or_404(Viatico.objects.select_related('viaje', 'conductor', 'viaje__vehiculo'), pk=id)
+    if viatico.viaje.usuario_conductor != request.user:
+        return HttpResponseForbidden('No tiene permiso para ver este viático.')
+
+    return render(request, 'Viaticos/detalle.html', {
+        'viatico': viatico,
+    })
+
+
+# ──────────────────────────────────────────────
+# INCIDENTES (ADMINISTRADOR)
+# ──────────────────────────────────────────────
+
+@admin_required
+def incidentes_admin(request):
+    """
+    Panel de administración para gestión, auditoría y resolución de incidentes.
+    """
+    incidentes = Incidente.objects.select_related('viaje', 'viaje__vehiculo', 'viaje__conductor').all()
+
+    estado_filtro = request.GET.get('estado', '').strip()
+    tipo_filtro = request.GET.get('tipo', '').strip()
+    conductor_filtro = request.GET.get('conductor', '').strip()
+    q = request.GET.get('q', '').strip()
+
+    if estado_filtro:
+        incidentes = incidentes.filter(estado=estado_filtro)
+    if tipo_filtro:
+        incidentes = incidentes.filter(tipo_incidente=tipo_filtro)
+    if conductor_filtro:
+        incidentes = incidentes.filter(viaje__conductor_id=conductor_filtro)
+    if q:
+        incidentes = incidentes.filter(
+            Q(lugar__icontains=q) |
+            Q(descripcion__icontains=q) |
+            Q(viaje__vehiculo__placa__icontains=q) |
+            Q(viaje__conductor__nombre_completo__icontains=q)
+        )
+
+    all_incidentes = Incidente.objects.all()
+    total_incidentes = all_incidentes.count()
+    pendientes = all_incidentes.filter(estado='Reportado').count()
+    en_revision = all_incidentes.filter(estado='En Revisión').count()
+    resueltos = all_incidentes.filter(estado='Resuelto').count()
+    rechazados = all_incidentes.filter(estado='Rechazado').count()
+
+    conductores = Conductor.objects.all()
+
+    return render(request, 'Incidentes/admin.html', {
+        'incidentes': incidentes,
+        'total_incidentes': total_incidentes,
+        'pendientes': pendientes,
+        'en_revision': en_revision,
+        'resueltos': resueltos,
+        'rechazados': rechazados,
+        'conductores': conductores,
+        'estado_filtro': estado_filtro,
+        'tipo_filtro': tipo_filtro,
+        'conductor_filtro': conductor_filtro,
+        'q': q,
+        'tipo_choices': Incidente.TIPO_CHOICES,
+        'estado_choices': Incidente.ESTADO_CHOICES,
+    })
+
+
+@admin_required
+def incidente_cambiar_estado(request, id):
+    """Acción del administrador para cambiar estado de un incidente (Revisión, Resuelto, Rechazado)."""
+    incidente = get_object_or_404(Incidente, pk=id)
+    if request.method == 'POST':
+        nuevo_estado = request.POST.get('estado')
+        if nuevo_estado in dict(Incidente.ESTADO_CHOICES):
+            incidente.estado = nuevo_estado
+            incidente.respuesta_admin = request.POST.get('respuesta_admin', '').strip()
+            if nuevo_estado in ['Resuelto', 'Rechazado']:
+                incidente.fecha_resolucion = timezone.now()
+            incidente.save()
+            messages.success(request, f"Incidente INC-{incidente.id:04d} actualizado a '{nuevo_estado}'.")
+        else:
+            messages.error(request, "Estado no válido.")
+    return redirect(request.META.get('HTTP_REFERER') or 'incidentes_admin')
+
+
+# ──────────────────────────────────────────────
+# VIÁTICOS (ADMINISTRADOR)
+# ──────────────────────────────────────────────
+
+@admin_required
+def viaticos_admin(request):
+    """
+    Panel financiero de auditoría, aprobación y reembolso de viáticos.
+    """
+    viaticos = Viatico.objects.select_related('conductor', 'viaje', 'viaje__vehiculo').all()
+
+    estado_filtro = request.GET.get('estado', '').strip()
+    tipo_filtro = request.GET.get('tipo', '').strip()
+    conductor_filtro = request.GET.get('conductor', '').strip()
+    q = request.GET.get('q', '').strip()
+
+    if estado_filtro:
+        viaticos = viaticos.filter(estado=estado_filtro)
+    if tipo_filtro:
+        viaticos = viaticos.filter(tipo_gasto=tipo_filtro)
+    if conductor_filtro:
+        viaticos = viaticos.filter(conductor_id=conductor_filtro)
+    if q:
+        viaticos = viaticos.filter(
+            Q(descripcion__icontains=q) |
+            Q(conductor__nombre_completo__icontains=q) |
+            Q(viaje__vehiculo__placa__icontains=q)
+        )
+
+    all_viaticos = Viatico.objects.all()
+    total_viaticos = all_viaticos.count()
+    monto_total = all_viaticos.aggregate(total=Sum('monto'))['total'] or 0
+    monto_aprobado = all_viaticos.filter(estado__in=['Aprobado', 'Reembolsado']).aggregate(total=Sum('monto'))['total'] or 0
+    monto_pendiente = all_viaticos.filter(estado='En validación').aggregate(total=Sum('monto'))['total'] or 0
+
+    pendientes_count = all_viaticos.filter(estado='En validación').count()
+    aprobados_count = all_viaticos.filter(estado='Aprobado').count()
+    reembolsados_count = all_viaticos.filter(estado='Reembolsado').count()
+    rechazados_count = all_viaticos.filter(estado='Rechazado').count()
+
+    conductores = Conductor.objects.all()
+
+    return render(request, 'Viaticos/admin.html', {
+        'viaticos': viaticos,
+        'total_viaticos': total_viaticos,
+        'monto_total': monto_total,
+        'monto_aprobado': monto_aprobado,
+        'monto_pendiente': monto_pendiente,
+        'pendientes_count': pendientes_count,
+        'aprobados_count': aprobados_count,
+        'reembolsados_count': reembolsados_count,
+        'rechazados_count': rechazados_count,
+        'conductores': conductores,
+        'estado_filtro': estado_filtro,
+        'tipo_filtro': tipo_filtro,
+        'conductor_filtro': conductor_filtro,
+        'q': q,
+        'tipo_choices': Viatico.TIPO_GASTO_CHOICES,
+        'estado_choices': Viatico.ESTADO_CHOICES,
+    })
+
+
+@admin_required
+def viatico_cambiar_estado(request, id):
+    """Acción del administrador para aprobar, rechazar o reembolsar un viático."""
+    viatico = get_object_or_404(Viatico, pk=id)
+    if request.method == 'POST':
+        nuevo_estado = request.POST.get('estado')
+        if nuevo_estado in dict(Viatico.ESTADO_CHOICES):
+            viatico.estado = nuevo_estado
+            viatico.observacion_admin = request.POST.get('observacion_admin', '').strip()
+            viatico.fecha_validacion = timezone.now()
+            viatico.save()
+            messages.success(request, f"Viático VTC-{viatico.id:04d} actualizado a '{nuevo_estado}'.")
+        else:
+            messages.error(request, "Estado no válido.")
+    return redirect(request.META.get('HTTP_REFERER') or 'viaticos_admin')
+

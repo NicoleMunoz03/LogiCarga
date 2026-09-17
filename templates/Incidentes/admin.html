@@ -1,0 +1,320 @@
+{% extends "base.html" %}
+
+{% block title %}LogiCarga – Gestión de Incidentes (Administrador){% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+  <!-- ── ENCABEZADO Y STATUS ── -->
+  <section class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight font-bold">Gestión de Incidentes</h1>
+      <p class="font-body-md text-body-md text-on-surface-variant mt-0.5">Auditoría, validación y dictamen de novedades reportadas en ruta</p>
+    </div>
+    <div class="flex items-center gap-3 flex-wrap">
+      <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-container-lowest border border-outline-variant/30 text-primary shadow-xs">
+        <span class="w-2 h-2 rounded-full bg-emerald-600 animate-pulse"></span>
+        <span class="font-label-md text-label-md font-semibold">Monitoreo y Auditoría Activa</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── TARJETAS KPI (BENTO CARDS) ── -->
+  <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+    <!-- Total Reportados -->
+    <div class="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-5 shadow-xs">
+      <div class="flex items-start justify-between">
+        <span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-medium">Total Reportados</span>
+        <div class="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined text-xl">report</span>
+        </div>
+      </div>
+      <div class="mt-3">
+        <span class="font-headline-xl text-headline-xl text-primary font-bold tabular-nums">{{ total_incidentes }}</span>
+        <span class="font-body-md text-body-md text-on-surface-variant ml-1">casos</span>
+      </div>
+    </div>
+
+    <!-- Pendientes / Nuevos -->
+    <div class="bg-surface-container-lowest border border-amber-200 rounded-xl p-5 shadow-xs">
+      <div class="flex items-start justify-between">
+        <span class="font-label-sm text-label-sm uppercase tracking-wider text-amber-900 font-semibold">Pendientes / Reportados</span>
+        <div class="w-9 h-9 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center">
+          <span class="material-symbols-outlined text-xl">schedule</span>
+        </div>
+      </div>
+      <div class="mt-3">
+        <span class="font-headline-xl text-headline-xl text-amber-900 font-bold tabular-nums">{{ pendientes }}</span>
+        <span class="font-body-md text-body-md text-amber-800 ml-1">por atender</span>
+      </div>
+    </div>
+
+    <!-- En Revisión -->
+    <div class="bg-surface-container-lowest border border-blue-200 rounded-xl p-5 shadow-xs">
+      <div class="flex items-start justify-between">
+        <span class="font-label-sm text-label-sm uppercase tracking-wider text-blue-900 font-semibold">En Atención / Revisión</span>
+        <div class="w-9 h-9 rounded-lg bg-blue-100 text-blue-800 flex items-center justify-center">
+          <span class="material-symbols-outlined text-xl">engineering</span>
+        </div>
+      </div>
+      <div class="mt-3">
+        <span class="font-headline-xl text-headline-xl text-blue-900 font-bold tabular-nums">{{ en_revision }}</span>
+        <span class="font-body-md text-body-md text-blue-800 ml-1">en gestión</span>
+      </div>
+    </div>
+
+    <!-- Resueltos -->
+    <div class="bg-surface-container-lowest border border-emerald-200 rounded-xl p-5 shadow-xs">
+      <div class="flex items-start justify-between">
+        <span class="font-label-sm text-label-sm uppercase tracking-wider text-emerald-900 font-semibold">Resueltos</span>
+        <div class="w-9 h-9 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center">
+          <span class="material-symbols-outlined text-xl">check_circle</span>
+        </div>
+      </div>
+      <div class="mt-3">
+        <span class="font-headline-xl text-headline-xl text-emerald-900 font-bold tabular-nums">{{ resueltos }}</span>
+        <span class="font-body-md text-body-md text-emerald-800 ml-1">cerrados</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── PANEL DE FILTROS ── -->
+  <section class="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-4 shadow-xs">
+    <form method="get" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end">
+      <!-- Filtro Estado -->
+      <div>
+        <label class="block font-label-sm text-label-sm text-on-surface-variant font-medium mb-1">Estado</label>
+        <select name="estado" class="w-full h-10 px-3 rounded-lg border border-outline-variant bg-surface-container-lowest text-on-surface text-body-md focus:border-primary focus:ring-1 focus:ring-primary">
+          <option value="">Todos los estados</option>
+          {% for val, label in estado_choices %}
+          <option value="{{ val }}" {% if estado_filtro == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Filtro Tipo -->
+      <div>
+        <label class="block font-label-sm text-label-sm text-on-surface-variant font-medium mb-1">Tipo de Incidente</label>
+        <select name="tipo" class="w-full h-10 px-3 rounded-lg border border-outline-variant bg-surface-container-lowest text-on-surface text-body-md focus:border-primary focus:ring-1 focus:ring-primary">
+          <option value="">Todos los tipos</option>
+          {% for val, label in tipo_choices %}
+          <option value="{{ val }}" {% if tipo_filtro == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Filtro Conductor -->
+      <div>
+        <label class="block font-label-sm text-label-sm text-on-surface-variant font-medium mb-1">Conductor</label>
+        <select name="conductor" class="w-full h-10 px-3 rounded-lg border border-outline-variant bg-surface-container-lowest text-on-surface text-body-md focus:border-primary focus:ring-1 focus:ring-primary">
+          <option value="">Todos los conductores</option>
+          {% for c in conductores %}
+          <option value="{{ c.id }}" {% if conductor_filtro == c.id|stringformat:"i" %}selected{% endif %}>{{ c.nombre_completo }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Búsqueda & Botón -->
+      <div class="flex items-center gap-2">
+        <div class="relative flex-1">
+          <input type="text" name="q" value="{{ q }}" placeholder="Buscar por lugar, vehículo..." class="w-full h-10 pl-9 pr-3 rounded-lg border border-outline-variant bg-surface-container-lowest text-on-surface text-body-md focus:border-primary focus:ring-1 focus:ring-primary">
+          <span class="material-symbols-outlined absolute left-2.5 top-2.5 text-on-surface-variant text-[20px]">search</span>
+        </div>
+        <button type="submit" class="h-10 px-4 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md font-semibold transition-colors">
+          Filtrar
+        </button>
+        {% if estado_filtro or tipo_filtro or conductor_filtro or q %}
+        <a href="{% url 'incidentes_admin' %}" class="h-10 px-3 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface-variant inline-flex items-center justify-center transition-colors" title="Limpiar filtros">
+          <span class="material-symbols-outlined text-[18px]">clear</span>
+        </a>
+        {% endif %}
+      </div>
+    </form>
+  </section>
+
+  <!-- ── TABLA PRINCIPAL DE INCIDENTES ── -->
+  <section class="bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-xs overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="border-b border-outline-variant/30 bg-surface-container-low/30 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">
+            <th class="py-3.5 px-6 font-semibold">Incidente</th>
+            <th class="py-3.5 px-6 font-semibold">Tipo & Lugar</th>
+            <th class="py-3.5 px-6 font-semibold">Vehículo / Viaje</th>
+            <th class="py-3.5 px-6 font-semibold">Conductor</th>
+            <th class="py-3.5 px-6 font-semibold">Fecha Ocurrido</th>
+            <th class="py-3.5 px-6 font-semibold">Evidencia</th>
+            <th class="py-3.5 px-6 font-semibold">Estado</th>
+            <th class="py-3.5 px-6 font-semibold text-right">Auditoría</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-outline-variant/20 font-body-md text-body-md">
+          {% for inc in incidentes %}
+          <tr class="hover:bg-surface-container-low/40 transition-colors">
+            <td class="py-3.5 px-6 font-tabular-data font-bold text-primary whitespace-nowrap">
+              INC-{{ inc.id|stringformat:"04d" }}
+            </td>
+            <td class="py-3.5 px-6">
+              <span class="font-semibold text-primary block">{{ inc.tipo_incidente }}</span>
+              <span class="text-body-sm text-on-surface-variant flex items-center gap-1 mt-0.5">
+                <span class="material-symbols-outlined text-[15px]">location_on</span>
+                {{ inc.lugar }}
+              </span>
+            </td>
+            <td class="py-3.5 px-6 whitespace-nowrap">
+              <span class="px-2 py-0.5 rounded bg-surface-container font-tabular-data text-tabular-data font-bold text-primary border border-outline-variant/30">
+                {{ inc.viaje.vehiculo.placa }}
+              </span>
+              <span class="text-body-sm text-on-surface-variant block mt-0.5">Viaje #{{ inc.viaje.id }}</span>
+            </td>
+            <td class="py-3.5 px-6 text-on-surface-variant whitespace-nowrap">
+              {{ inc.viaje.conductor.nombre_completo }}
+            </td>
+            <td class="py-3.5 px-6 font-tabular-data text-on-surface-variant whitespace-nowrap">
+              {{ inc.fecha_incidente|date:"d/m/Y H:i" }}
+            </td>
+            <td class="py-3.5 px-6">
+              {% if inc.foto_evidencia %}
+              <button onclick="openIncidenteModal('{{ inc.id }}', '{{ inc.tipo_incidente|escapejs }}', '{{ inc.lugar|escapejs }}', '{{ inc.descripcion|escapejs }}', '{{ inc.foto_evidencia.url }}', '{{ inc.estado }}', '{{ inc.respuesta_admin|escapejs }}', '{{ inc.viaje.vehiculo.placa }}', '{{ inc.viaje.conductor.nombre_completo|escapejs }}')" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary font-label-sm text-label-sm font-semibold transition-colors">
+                <span class="material-symbols-outlined text-[16px]">image</span>
+                <span>Ver Foto</span>
+              </button>
+              {% else %}
+              <span class="text-body-sm text-outline italic">Sin foto</span>
+              {% endif %}
+            </td>
+            <td class="py-3.5 px-6 whitespace-nowrap">
+              {% if inc.estado == 'Resuelto' %}
+              <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-label-sm font-semibold">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> Resuelto
+              </span>
+              {% elif inc.estado == 'En Revisión' %}
+              <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-800 border border-blue-200 text-label-sm font-semibold">
+                <span class="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse"></span> En Revisión
+              </span>
+              {% elif inc.estado == 'Rechazado' %}
+              <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-800 border border-rose-200 text-label-sm font-semibold">
+                <span class="w-1.5 h-1.5 rounded-full bg-rose-600"></span> Rechazado
+              </span>
+              {% else %}
+              <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200 text-label-sm font-semibold">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-600"></span> Reportado
+              </span>
+              {% endif %}
+            </td>
+            <td class="py-3.5 px-6 text-right whitespace-nowrap">
+              <button onclick="openIncidenteModal('{{ inc.id }}', '{{ inc.tipo_incidente|escapejs }}', '{{ inc.lugar|escapejs }}', '{{ inc.descripcion|escapejs }}', '{% if inc.foto_evidencia %}{{ inc.foto_evidencia.url }}{% endif %}', '{{ inc.estado }}', '{{ inc.respuesta_admin|escapejs }}', '{{ inc.viaje.vehiculo.placa }}', '{{ inc.viaje.conductor.nombre_completo|escapejs }}')" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container hover:bg-primary hover:text-on-primary text-primary font-label-md text-label-md font-semibold transition-all">
+                <span class="material-symbols-outlined text-[18px]">rate_review</span>
+                <span>Auditar</span>
+              </button>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="8" class="py-12 text-center text-on-surface-variant">
+              <span class="material-symbols-outlined text-4xl text-outline-variant block mb-2">task_alt</span>
+              No se encontraron incidentes con los filtros seleccionados.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</div>
+
+<!-- ── MODAL DE AUDITORÍA Y RESOLUCIÓN DE INCIDENTE ── -->
+<div id="incidenteModal" class="fixed inset-0 bg-primary/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+  <div class="bg-surface-container-lowest border border-outline-variant/40 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl p-6 space-y-5">
+    
+    <!-- Modal Header -->
+    <div class="flex items-center justify-between border-b border-outline-variant/30 pb-4">
+      <div>
+        <h3 id="modalIncTitle" class="font-headline-md text-headline-md font-bold text-primary">Auditar Incidente</h3>
+        <p id="modalIncSubtitle" class="font-body-sm text-body-sm text-on-surface-variant mt-0.5"></p>
+      </div>
+      <button onclick="closeIncidenteModal()" class="p-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-primary transition-colors">
+        <span class="material-symbols-outlined text-[24px]">close</span>
+      </button>
+    </div>
+
+    <!-- Modal Content: Info & Evidence -->
+    <div class="space-y-4">
+      <div class="bg-surface-container-low p-4 rounded-xl space-y-2">
+        <p class="font-label-sm text-label-sm text-on-surface-variant font-medium">Descripción del Conductor:</p>
+        <p id="modalIncDesc" class="font-body-md text-body-md text-primary leading-relaxed"></p>
+      </div>
+
+      <!-- Image Preview -->
+      <div id="modalIncImgContainer" class="hidden">
+        <p class="font-label-sm text-label-sm text-on-surface-variant font-medium mb-1.5">Foto de Evidencia Adjunta:</p>
+        <div class="rounded-xl overflow-hidden border border-outline-variant/40 bg-black/5 flex items-center justify-center max-h-72">
+          <a id="modalIncImgLink" href="#" target="_blank" title="Clic para ver en tamaño completo">
+            <img id="modalIncImg" src="" alt="Evidencia de incidente" class="max-h-72 object-contain hover:scale-102 transition-transform cursor-zoom-in">
+          </a>
+        </div>
+      </div>
+
+      <!-- Decision Form -->
+      <form id="modalIncForm" method="post" action="" class="space-y-4 pt-2">
+        {% csrf_token %}
+        <div>
+          <label class="block font-label-md text-label-md text-primary font-semibold mb-1.5">Dictamen / Cambiar Estado:</label>
+          <select id="modalIncEstadoSelect" name="estado" class="w-full h-11 px-3.5 rounded-lg border border-outline-variant bg-surface-container-lowest font-body-md text-body-md font-medium text-primary focus:border-primary focus:ring-1 focus:ring-primary cursor-pointer">
+            <option value="Reportado">Reportado (Pendiente)</option>
+            <option value="En Revisión">En Revisión (En atención técnica)</option>
+            <option value="Resuelto">Resuelto (Aceptado y solucionado)</option>
+            <option value="Rechazado">Rechazado (No procede / Desestimado)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block font-label-md text-label-md text-primary font-semibold mb-1.5">Observaciones / Respuesta Administrativa:</label>
+          <textarea id="modalIncRespuesta" name="respuesta_admin" rows="3" placeholder="Ingrese el dictamen, instrucciones para el conductor o motivo de resolución/rechazo..." class="w-full p-3 rounded-lg border border-outline-variant bg-surface-container-lowest font-body-md text-body-md text-primary focus:border-primary focus:ring-2 focus:ring-primary/20 resize-none"></textarea>
+        </div>
+
+        <div class="flex items-center justify-end gap-3 pt-2">
+          <button type="button" onclick="closeIncidenteModal()" class="px-4 py-2.5 rounded-lg border border-outline-variant bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md transition-colors">
+            Cancelar
+          </button>
+          <button type="submit" class="px-5 py-2.5 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md font-semibold shadow-sm transition-colors">
+            Guardar Dictamen
+          </button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function openIncidenteModal(id, tipo, lugar, desc, imgUrl, estado, respuesta, placa, conductor) {
+  document.getElementById('modalIncTitle').textContent = 'Incidente INC-' + String(id).padStart(4, '0') + ' · ' + tipo;
+  document.getElementById('modalIncSubtitle').textContent = 'Vehículo ' + placa + ' · Conductor: ' + conductor + ' · ' + lugar;
+  document.getElementById('modalIncDesc').textContent = desc || 'Sin descripción detallada.';
+  document.getElementById('modalIncEstadoSelect').value = estado;
+  document.getElementById('modalIncRespuesta').value = respuesta || '';
+
+  const imgContainer = document.getElementById('modalIncImgContainer');
+  const imgElem = document.getElementById('modalIncImg');
+  const imgLink = document.getElementById('modalIncImgLink');
+
+  if (imgUrl && imgUrl.trim() !== '') {
+    imgElem.src = imgUrl;
+    imgLink.href = imgUrl;
+    imgContainer.classList.remove('hidden');
+  } else {
+    imgContainer.classList.add('hidden');
+    imgElem.src = '';
+  }
+
+  document.getElementById('modalIncForm').action = '/incidentes/admin/' + id + '/estado/';
+  document.getElementById('incidenteModal').classList.remove('hidden');
+}
+
+function closeIncidenteModal() {
+  document.getElementById('incidenteModal').classList.add('hidden');
+}
+</script>
+{% endblock %}

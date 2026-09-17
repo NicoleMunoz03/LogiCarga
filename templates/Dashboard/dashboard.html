@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
 {% block title %}LogiCarga Transportes S.A. | Panel General{% endblock %}
 
@@ -6,235 +6,231 @@
 {% block header_subtitle %}Resumen integral de la operación y telemetría de transporte{% endblock %}
 
 {% block content %}
-<!-- BOTONES DE ACCIÓN RÁPIDA -->
+
+<!-- ═══════════════════════════════════════════════════
+     BARRA DE ACCIONES RÁPIDAS
+     Estructura: panel con etiqueta + 6 acciones compactas
+     ═══════════════════════════════════════════════════ -->
 <section aria-label="Acciones Rápidas">
-  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
-    <!-- Acción: Registrar Vehículo -->
-    <a href="{% url 'vehiculo_crear' %}" class="flex items-center justify-between p-4 bg-surface-container-lowest border border-outline-variant/40 rounded-xl shadow-xs hover:border-primary/40 hover:shadow-sm transition-all duration-150 group text-left">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-lg bg-surface-container-low text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-on-primary transition-colors duration-150">
-          <span class="material-symbols-outlined text-[22px]">local_shipping</span>
-        </div>
-        <div>
-          <span class="font-label-lg text-label-lg font-bold text-primary block leading-tight">Vehículo</span>
-          <span class="font-body-sm text-body-sm text-on-surface-variant text-[11px]">Nuevo registro</span>
-        </div>
-      </div>
-      <span class="material-symbols-outlined text-outline group-hover:text-primary group-hover:translate-x-0.5 transition-all text-[18px]">add_circle</span>
-    </a>
+  <div class="bg-surface-container-lowest border border-outline-variant/40 rounded-2xl shadow-xs p-4 sm:p-5">
+    <!-- Section label -->
+    <div class="flex items-center gap-2 mb-3 sm:mb-4">
+      <span class="material-symbols-outlined text-[16px] text-on-surface-variant">bolt</span>
+      <span class="font-label-sm text-label-sm uppercase tracking-widest text-on-surface-variant font-bold">Acciones Operativas</span>
+    </div>
 
-    <!-- Acción: Registrar Conductor -->
-    <a href="{% url 'conductor_crear' %}" class="flex items-center justify-between p-4 bg-surface-container-lowest border border-outline-variant/40 rounded-xl shadow-xs hover:border-primary/40 hover:shadow-sm transition-all duration-150 group text-left">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-lg bg-surface-container-low text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-on-primary transition-colors duration-150">
-          <span class="material-symbols-outlined text-[22px]">person_add</span>
-        </div>
-        <div>
-          <span class="font-label-lg text-label-lg font-bold text-primary block leading-tight">Conductor</span>
-          <span class="font-body-sm text-body-sm text-on-surface-variant text-[11px]">Nuevo rol</span>
-        </div>
-      </div>
-      <span class="material-symbols-outlined text-outline group-hover:text-primary group-hover:translate-x-0.5 transition-all text-[18px]">add_circle</span>
-    </a>
+    <!-- Action grid: 2 cols on mobile → 3 on sm → 6 on xl -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-2 sm:gap-3">
 
-    <!-- Acción: Crear Viaje (Destacado Primario) -->
-    <a href="{% url 'viaje_crear' %}" class="flex items-center justify-between p-4 bg-primary text-on-primary border border-primary rounded-xl shadow-xs hover:bg-primary-container hover:shadow-sm transition-all duration-150 group text-left">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-lg bg-white/10 text-on-primary flex items-center justify-center group-hover:bg-white/20 transition-colors duration-150">
+      <!-- Acción Principal: Crear Viaje (destacada) -->
+      <a href="{% url 'viaje_crear' %}"
+         class="col-span-2 sm:col-span-3 xl:col-span-2 flex items-center gap-3 p-3.5 bg-primary text-on-primary rounded-xl shadow-sm hover:bg-primary-container active:scale-[0.98] transition-all duration-150 group">
+        <div class="w-10 h-10 rounded-lg bg-white/15 flex items-center justify-center flex-shrink-0 group-hover:bg-white/25 transition-colors">
           <span class="material-symbols-outlined text-[22px]">route</span>
         </div>
-        <div>
-          <span class="font-label-lg text-label-lg font-bold text-on-primary block leading-tight">Crear Viaje</span>
-          <span class="font-body-sm text-body-sm text-surface-container-high text-[11px]">Hoja de ruta</span>
+        <div class="min-w-0">
+          <span class="font-label-lg text-label-lg font-bold block leading-tight">Crear Viaje</span>
+          <span class="text-[11px] text-white/70 font-medium">Hoja de ruta</span>
         </div>
-      </div>
-      <span class="material-symbols-outlined text-surface-container-high group-hover:translate-x-0.5 transition-transform text-[18px]">arrow_forward</span>
-    </a>
+        <span class="material-symbols-outlined text-[18px] text-white/60 ml-auto group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
+      </a>
 
-    <!-- Acción: Registrar Combustible -->
-    <a href="{% url 'combustible_crear' %}" class="flex items-center justify-between p-4 bg-surface-container-lowest border border-outline-variant/40 rounded-xl shadow-xs hover:border-primary/40 hover:shadow-sm transition-all duration-150 group text-left">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-lg bg-surface-container-low text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-on-primary transition-colors duration-150">
-          <span class="material-symbols-outlined text-[22px]">local_gas_station</span>
+      <!-- Vehículo -->
+      <a href="{% url 'vehiculo_crear' %}"
+         class="flex flex-col items-center justify-center gap-1.5 p-3 bg-surface-container-low border border-outline-variant/30 rounded-xl hover:border-primary/40 hover:bg-surface-container hover:shadow-sm active:scale-[0.97] transition-all duration-150 group text-center">
+        <div class="w-9 h-9 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors">
+          <span class="material-symbols-outlined text-[20px]">local_shipping</span>
         </div>
-        <div>
-          <span class="font-label-lg text-label-lg font-bold text-primary block leading-tight">Combustible</span>
-          <span class="font-body-sm text-body-sm text-on-surface-variant text-[11px]">Nueva carga</span>
-        </div>
-      </div>
-      <span class="material-symbols-outlined text-outline group-hover:text-primary group-hover:translate-x-0.5 transition-all text-[18px]">add_circle</span>
-    </a>
+        <span class="font-label-md text-label-md font-bold text-primary leading-tight">Vehículo</span>
+        <span class="text-[10px] text-on-surface-variant">Nuevo registro</span>
+      </a>
 
-    <!-- Acción: Registrar Mantenimiento -->
-    <a href="{% url 'mantenimiento_crear' %}" class="flex items-center justify-between p-4 bg-surface-container-lowest border border-outline-variant/40 rounded-xl shadow-xs hover:border-primary/40 hover:shadow-sm transition-all duration-150 group text-left">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center group-hover:bg-amber-600 group-hover:text-white transition-colors duration-150">
-          <span class="material-symbols-outlined text-[22px]">build</span>
+      <!-- Conductor -->
+      <a href="{% url 'conductor_crear' %}"
+         class="flex flex-col items-center justify-center gap-1.5 p-3 bg-surface-container-low border border-outline-variant/30 rounded-xl hover:border-primary/40 hover:bg-surface-container hover:shadow-sm active:scale-[0.97] transition-all duration-150 group text-center">
+        <div class="w-9 h-9 rounded-lg bg-violet-50 text-violet-700 flex items-center justify-center group-hover:bg-violet-600 group-hover:text-white transition-colors">
+          <span class="material-symbols-outlined text-[20px]">person_add</span>
         </div>
-        <div>
-          <span class="font-label-lg text-label-lg font-bold text-primary block leading-tight">Mantenimiento</span>
-          <span class="font-body-sm text-body-sm text-on-surface-variant text-[11px]">Orden técnica</span>
-        </div>
-      </div>
-      <span class="material-symbols-outlined text-outline group-hover:text-primary group-hover:translate-x-0.5 transition-all text-[18px]">add_circle</span>
-    </a>
+        <span class="font-label-md text-label-md font-bold text-primary leading-tight">Conductor</span>
+        <span class="text-[10px] text-on-surface-variant">Nuevo rol</span>
+      </a>
 
-    <!-- Acción: Centro de Reportes -->
-    <a href="{% url 'reportes_index' %}" class="flex items-center justify-between p-4 bg-surface-container-lowest border border-outline-variant/40 rounded-xl shadow-xs hover:border-primary/40 hover:shadow-sm transition-all duration-150 group text-left">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center group-hover:bg-secondary group-hover:text-white transition-colors duration-150">
-          <span class="material-symbols-outlined text-[22px]">analytics</span>
+      <!-- Combustible -->
+      <a href="{% url 'combustible_crear' %}"
+         class="flex flex-col items-center justify-center gap-1.5 p-3 bg-surface-container-low border border-outline-variant/30 rounded-xl hover:border-primary/40 hover:bg-surface-container hover:shadow-sm active:scale-[0.97] transition-all duration-150 group text-center">
+        <div class="w-9 h-9 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center group-hover:bg-amber-500 group-hover:text-white transition-colors">
+          <span class="material-symbols-outlined text-[20px]">local_gas_station</span>
         </div>
-        <div>
-          <span class="font-label-lg text-label-lg font-bold text-primary block leading-tight">Reportes</span>
-          <span class="font-body-sm text-body-sm text-on-surface-variant text-[11px]">Telemetría y KPIs</span>
+        <span class="font-label-md text-label-md font-bold text-primary leading-tight">Combustible</span>
+        <span class="text-[10px] text-on-surface-variant">Nueva carga</span>
+      </a>
+
+      <!-- Mantenimiento -->
+      <a href="{% url 'mantenimiento_crear' %}"
+         class="flex flex-col items-center justify-center gap-1.5 p-3 bg-surface-container-low border border-outline-variant/30 rounded-xl hover:border-primary/40 hover:bg-surface-container hover:shadow-sm active:scale-[0.97] transition-all duration-150 group text-center">
+        <div class="w-9 h-9 rounded-lg bg-orange-50 text-orange-700 flex items-center justify-center group-hover:bg-orange-600 group-hover:text-white transition-colors">
+          <span class="material-symbols-outlined text-[20px]">build</span>
         </div>
-      </div>
-      <span class="material-symbols-outlined text-outline group-hover:text-primary group-hover:translate-x-0.5 transition-all text-[18px]">arrow_forward</span>
-    </a>
+        <span class="font-label-md text-label-md font-bold text-primary leading-tight">Mantenim.</span>
+        <span class="text-[10px] text-on-surface-variant">Orden técnica</span>
+      </a>
+
+      <!-- Reportes -->
+      <a href="{% url 'reportes_index' %}"
+         class="flex flex-col items-center justify-center gap-1.5 p-3 bg-surface-container-low border border-outline-variant/30 rounded-xl hover:border-primary/40 hover:bg-surface-container hover:shadow-sm active:scale-[0.97] transition-all duration-150 group text-center">
+        <div class="w-9 h-9 rounded-lg bg-sky-50 text-sky-700 flex items-center justify-center group-hover:bg-sky-600 group-hover:text-white transition-colors">
+          <span class="material-symbols-outlined text-[20px]">analytics</span>
+        </div>
+        <span class="font-label-md text-label-md font-bold text-primary leading-tight">Reportes</span>
+        <span class="text-[10px] text-on-surface-variant">KPIs y datos</span>
+      </a>
+
+    </div>
   </div>
 </section>
 
-<!-- FILA DE TARJETAS ESTADÍSTICAS (KPIS) -->
+<!-- ═══════════════════════════════════════════════════
+     MÉTRICAS CLAVE / KPIs
+     6 tarjetas con acentos de color temáticos por módulo
+     ═══════════════════════════════════════════════════ -->
 <section aria-label="Métricas Clave">
-  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
-    <!-- Tarjeta 1: Vehículos Registrados -->
-    <div class="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant/40 shadow-xs flex flex-col justify-between hover:border-outline-variant transition-colors duration-150">
-      <div class="flex items-center justify-between">
-        <span class="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-semibold text-[11px]">Vehículos</span>
-        <div class="w-8 h-8 rounded-lg bg-surface-container text-primary flex items-center justify-center">
-          <span class="material-symbols-outlined text-[18px]">local_shipping</span>
+  <!-- Section label -->
+  <div class="flex items-center gap-2 mb-3">
+    <span class="material-symbols-outlined text-[16px] text-on-surface-variant">monitoring</span>
+    <span class="font-label-sm text-label-sm uppercase tracking-widest text-on-surface-variant font-bold">Métricas de Control</span>
+  </div>
+
+  <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
+
+    <!-- KPI 1: Vehículos — azul flota -->
+    <div class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/40 shadow-xs hover:shadow-sm hover:border-blue-200 transition-all duration-150 group">
+      <div class="flex items-center justify-between mb-3">
+        <span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-bold text-[10px]">Flota</span>
+        <div class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center group-hover:bg-blue-100 transition-colors">
+          <span class="material-symbols-outlined text-[16px]">local_shipping</span>
         </div>
       </div>
-      <div class="mt-3">
-        <span class="font-headline-xl text-headline-xl font-bold text-primary leading-tight font-tabular-data">{{ total_vehiculos }}</span>
-        <p class="font-body-sm text-body-sm text-on-surface-variant mt-1 flex items-center gap-1.5">
-          <span class="inline-block w-2 h-2 rounded-full bg-emerald-600"></span>
-          <span>Flota Total</span>
-        </p>
+      <span class="font-tabular-data text-[28px] font-bold text-primary leading-none block">{{ total_vehiculos }}</span>
+      <div class="mt-2 flex items-center gap-1.5">
+        <span class="inline-block w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+        <span class="font-body-sm text-body-sm text-on-surface-variant text-[11px]">Vehículos</span>
       </div>
     </div>
 
-    <!-- Tarjeta 2: Conductores Registrados -->
-    <div class="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant/40 shadow-xs flex flex-col justify-between hover:border-outline-variant transition-colors duration-150">
-      <div class="flex items-center justify-between">
-        <span class="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-semibold text-[11px]">Conductores</span>
-        <div class="w-8 h-8 rounded-lg bg-surface-container text-primary flex items-center justify-center">
-          <span class="material-symbols-outlined text-[18px]">badge</span>
+    <!-- KPI 2: Conductores — violeta nómina -->
+    <div class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/40 shadow-xs hover:shadow-sm hover:border-violet-200 transition-all duration-150 group">
+      <div class="flex items-center justify-between mb-3">
+        <span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-bold text-[10px]">Personal</span>
+        <div class="w-7 h-7 rounded-lg bg-violet-50 text-violet-600 flex items-center justify-center group-hover:bg-violet-100 transition-colors">
+          <span class="material-symbols-outlined text-[16px]">badge</span>
         </div>
       </div>
-      <div class="mt-3">
-        <span class="font-headline-xl text-headline-xl font-bold text-primary leading-tight font-tabular-data">{{ total_conductores }}</span>
-        <p class="font-body-sm text-body-sm text-on-surface-variant mt-1 flex items-center gap-1.5">
-          <span class="inline-block w-2 h-2 rounded-full bg-blue-600"></span>
-          <span>Nómina Activa</span>
-        </p>
+      <span class="font-tabular-data text-[28px] font-bold text-primary leading-none block">{{ total_conductores }}</span>
+      <div class="mt-2 flex items-center gap-1.5">
+        <span class="inline-block w-1.5 h-1.5 rounded-full bg-violet-500"></span>
+        <span class="font-body-sm text-body-sm text-on-surface-variant text-[11px]">Conductores</span>
       </div>
     </div>
 
-    <!-- Tarjeta 3: Viajes Registrados -->
-    <div class="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant/40 shadow-xs flex flex-col justify-between hover:border-outline-variant transition-colors duration-150">
-      <div class="flex items-center justify-between">
-        <span class="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-semibold text-[11px]">Viajes</span>
-        <div class="w-8 h-8 rounded-lg bg-surface-container text-primary flex items-center justify-center">
-          <span class="material-symbols-outlined text-[18px]">route</span>
+    <!-- KPI 3: Viajes — índigo rutas -->
+    <div class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/40 shadow-xs hover:shadow-sm hover:border-indigo-200 transition-all duration-150 group">
+      <div class="flex items-center justify-between mb-3">
+        <span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-bold text-[10px]">Rutas</span>
+        <div class="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:bg-indigo-100 transition-colors">
+          <span class="material-symbols-outlined text-[16px]">route</span>
         </div>
       </div>
-      <div class="mt-3">
-        <span class="font-headline-xl text-headline-xl font-bold text-primary leading-tight font-tabular-data">{{ total_viajes }}</span>
-        <p class="font-body-sm text-body-sm text-on-surface-variant mt-1 flex items-center gap-1.5">
-          <span class="material-symbols-outlined text-[14px] text-blue-600">schedule</span>
-          <span>Total rutas</span>
-        </p>
+      <span class="font-tabular-data text-[28px] font-bold text-primary leading-none block">{{ total_viajes }}</span>
+      <div class="mt-2 flex items-center gap-1.5">
+        <span class="material-symbols-outlined text-[12px] text-indigo-500">schedule</span>
+        <span class="font-body-sm text-body-sm text-on-surface-variant text-[11px]">Viajes total</span>
       </div>
     </div>
 
-    <!-- Tarjeta 4: Cargas de Combustible -->
-    <div class="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant/40 shadow-xs flex flex-col justify-between hover:border-outline-variant transition-colors duration-150">
-      <div class="flex items-center justify-between">
-        <span class="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-semibold text-[11px]">Combustible</span>
-        <div class="w-8 h-8 rounded-lg bg-surface-container text-primary flex items-center justify-center">
-          <span class="material-symbols-outlined text-[18px]">local_gas_station</span>
+    <!-- KPI 4: Combustible — ámbar energía -->
+    <div class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/40 shadow-xs hover:shadow-sm hover:border-amber-200 transition-all duration-150 group">
+      <div class="flex items-center justify-between mb-3">
+        <span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-bold text-[10px]">Energía</span>
+        <div class="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center group-hover:bg-amber-100 transition-colors">
+          <span class="material-symbols-outlined text-[16px]">local_gas_station</span>
         </div>
       </div>
-      <div class="mt-3">
-        <span class="font-headline-xl text-headline-xl font-bold text-primary leading-tight font-tabular-data">{{ total_combustible }}</span>
-        <p class="font-body-sm text-body-sm text-on-surface-variant mt-1 flex items-center gap-1.5">
-          <span class="material-symbols-outlined text-[14px] text-primary">calendar_month</span>
-          <span>Cargas</span>
-        </p>
+      <span class="font-tabular-data text-[28px] font-bold text-primary leading-none block">{{ total_combustible }}</span>
+      <div class="mt-2 flex items-center gap-1.5">
+        <span class="inline-block w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+        <span class="font-body-sm text-body-sm text-on-surface-variant text-[11px]">Cargas reg.</span>
       </div>
     </div>
 
-    <!-- Tarjeta 5: Mantenimientos Registrados -->
-    <div class="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant/40 shadow-xs flex flex-col justify-between hover:border-outline-variant transition-colors duration-150">
-      <div class="flex items-center justify-between">
-        <span class="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-semibold text-[11px]">Mantenimientos</span>
-        <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center">
-          <span class="material-symbols-outlined text-[18px]">build</span>
+    <!-- KPI 5: Mantenimientos — naranja taller -->
+    <div class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/40 shadow-xs hover:shadow-sm hover:border-orange-200 transition-all duration-150 group">
+      <div class="flex items-center justify-between mb-3">
+        <span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-bold text-[10px]">Taller</span>
+        <div class="w-7 h-7 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center group-hover:bg-orange-100 transition-colors">
+          <span class="material-symbols-outlined text-[16px]">build</span>
         </div>
       </div>
-      <div class="mt-3">
-        <span class="font-headline-xl text-headline-xl font-bold text-primary leading-tight font-tabular-data">{{ total_mantenimientos }}</span>
-        <p class="font-body-sm text-body-sm text-on-surface-variant mt-1 flex items-center gap-1.5">
-          <span class="inline-block w-2 h-2 rounded-full bg-amber-500"></span>
-          <span>{{ mantenimientos_activos }} en taller</span>
-        </p>
+      <span class="font-tabular-data text-[28px] font-bold text-primary leading-none block">{{ total_mantenimientos }}</span>
+      <div class="mt-2 flex items-center gap-1.5">
+        <span class="inline-block w-1.5 h-1.5 rounded-full bg-orange-400"></span>
+        <span class="font-body-sm text-body-sm text-on-surface-variant text-[11px]">{{ mantenimientos_activos }} en taller</span>
       </div>
     </div>
 
-    <!-- Tarjeta 6: Inversión en Mantenimientos -->
-    <div class="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant/40 shadow-xs flex flex-col justify-between hover:border-outline-variant transition-colors duration-150">
-      <div class="flex items-center justify-between">
-        <span class="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-semibold text-[11px]">Inversión Taller</span>
-        <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center">
-          <span class="material-symbols-outlined text-[18px]">payments</span>
+    <!-- KPI 6: Inversión — esmeralda finanzas -->
+    <div class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/40 shadow-xs hover:shadow-sm hover:border-emerald-200 transition-all duration-150 group">
+      <div class="flex items-center justify-between mb-3">
+        <span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-bold text-[10px]">Inversión</span>
+        <div class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-100 transition-colors">
+          <span class="material-symbols-outlined text-[16px]">payments</span>
         </div>
       </div>
-      <div class="mt-3">
-        <span class="font-headline-xl text-headline-xl font-bold text-primary leading-tight font-tabular-data">${{ total_inversion_mantenimiento|floatformat:0 }}</span>
-        <p class="font-body-sm text-body-sm text-on-surface-variant mt-1 flex items-center gap-1.5">
-          <span class="material-symbols-outlined text-[14px] text-emerald-600">verified</span>
-          <span>Total COP</span>
-        </p>
+      <span class="font-tabular-data text-[22px] font-bold text-primary leading-none block">${{ total_inversion_mantenimiento|floatformat:0 }}</span>
+      <div class="mt-2 flex items-center gap-1.5">
+        <span class="material-symbols-outlined text-[12px] text-emerald-600">verified</span>
+        <span class="font-body-sm text-body-sm text-on-surface-variant text-[11px]">Total COP</span>
       </div>
     </div>
+
   </div>
 </section>
 
-<!-- SECCIONES DE DATOS EN EL CONTENIDO PRINCIPAL -->
-<div class="grid grid-cols-1 gap-8">
+<!-- ═══════════════════════════════════════════════════
+     SECCIONES DE DATOS RECIENTES
+     ═══════════════════════════════════════════════════ -->
+<div class="grid grid-cols-1 gap-6 lg:gap-8">
+
   <!-- SECCIÓN 1: Vehículos recientes -->
   <section class="bg-surface-container-lowest border border-outline-variant/40 rounded-xl shadow-xs overflow-hidden">
-    <div class="px-6 py-4 border-b border-outline-variant/30 flex items-center justify-between bg-surface-container-lowest">
+    <div class="px-4 sm:px-6 py-4 border-b border-outline-variant/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-surface-container-lowest">
       <div>
         <h2 class="font-headline-sm text-headline-sm font-bold text-primary">Vehículos recientes</h2>
         <p class="font-body-sm text-body-sm text-on-surface-variant">Últimas unidades incorporadas y estado operacional</p>
       </div>
-      <a href="{% url 'vehiculos_lista' %}" class="px-3.5 py-1.5 rounded-lg border border-outline-variant text-primary font-label-md text-label-md hover:bg-surface-container-low transition-colors duration-150 flex items-center gap-1.5">
+      <a href="{% url 'vehiculos_lista' %}" class="inline-flex self-start sm:self-auto items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-outline-variant text-primary font-label-md text-label-md hover:bg-surface-container-low transition-colors duration-150 flex-shrink-0">
         <span>Ver todos</span>
         <span class="material-symbols-outlined text-[16px]">chevron_right</span>
       </a>
     </div>
     <div class="overflow-x-auto">
-      <table class="w-full text-left border-collapse">
+      <table class="w-full text-left border-collapse min-w-[480px]">
         <thead>
           <tr class="bg-surface-bright border-b border-outline-variant/30">
-            <th class="px-6 py-3 font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-semibold text-[11px]" scope="col">Placa</th>
-            <th class="px-6 py-3 font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-semibold text-[11px]" scope="col">Modelo</th>
-            <th class="px-6 py-3 font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-semibold text-[11px]" scope="col">Capacidad</th>
-            <th class="px-6 py-3 font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-semibold text-[11px]" scope="col">Estado</th>
+            <th class="px-4 sm:px-6 py-3 font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-semibold text-[11px]" scope="col">Placa</th>
+            <th class="px-4 sm:px-6 py-3 font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-semibold text-[11px]" scope="col">Modelo</th>
+            <th class="px-4 sm:px-6 py-3 font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-semibold text-[11px]" scope="col">Capacidad</th>
+            <th class="px-4 sm:px-6 py-3 font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-semibold text-[11px]" scope="col">Estado</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-outline-variant/20 font-body-md text-body-md">
           {% for v in vehiculos_recientes %}
           <tr class="hover:bg-surface-container-low/60 transition-colors duration-150">
-            <td class="px-6 py-4 whitespace-nowrap">
+            <td class="px-4 sm:px-6 py-4 whitespace-nowrap">
               <span class="font-tabular-data text-tabular-data font-bold text-primary tracking-wide px-2.5 py-1 rounded bg-surface-container-low border border-outline-variant/30">{{ v.placa }}</span>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap font-medium text-primary">{{ v.modelo }}</td>
-            <td class="px-6 py-4 whitespace-nowrap font-tabular-data text-on-surface-variant">{{ v.capacidad_carga }} kg</td>
-            <td class="px-6 py-4 whitespace-nowrap">
+            <td class="px-4 sm:px-6 py-4 whitespace-nowrap font-medium text-primary">{{ v.modelo }}</td>
+            <td class="px-4 sm:px-6 py-4 whitespace-nowrap font-tabular-data text-on-surface-variant">{{ v.capacidad_carga }} kg</td>
+            <td class="px-4 sm:px-6 py-4 whitespace-nowrap">
               {% if v.estado == 'Disponible' %}
               <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 font-label-sm text-label-sm font-semibold">
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>{{ v.estado }}
@@ -260,40 +256,40 @@
 
   <!-- SECCIÓN 2: Viajes recientes -->
   <section class="bg-surface-container-lowest border border-outline-variant/40 rounded-xl shadow-xs overflow-hidden">
-    <div class="px-6 py-4 border-b border-outline-variant/30 flex items-center justify-between bg-surface-container-lowest">
+    <div class="px-4 sm:px-6 py-4 border-b border-outline-variant/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-surface-container-lowest">
       <div>
         <h2 class="font-headline-sm text-headline-sm font-bold text-primary">Viajes recientes</h2>
         <p class="font-body-sm text-body-sm text-on-surface-variant">Seguimiento de rutas interurbanas y carga pesada</p>
       </div>
-      <a href="{% url 'viajes_lista' %}" class="px-3.5 py-1.5 rounded-lg border border-outline-variant text-primary font-label-md text-label-md hover:bg-surface-container-low transition-colors duration-150 flex items-center gap-1.5">
+      <a href="{% url 'viajes_lista' %}" class="inline-flex self-start sm:self-auto items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-outline-variant text-primary font-label-md text-label-md hover:bg-surface-container-low transition-colors duration-150 flex-shrink-0">
         <span>Ver historial</span>
         <span class="material-symbols-outlined text-[16px]">chevron_right</span>
       </a>
     </div>
     <div class="overflow-x-auto">
-      <table class="w-full text-left border-collapse">
+      <table class="w-full text-left border-collapse min-w-[560px]">
         <thead>
           <tr class="bg-surface-bright border-b border-outline-variant/30">
-            <th class="px-6 py-3 font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-semibold text-[11px]" scope="col">Vehículo</th>
-            <th class="px-6 py-3 font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-semibold text-[11px]" scope="col">Conductor</th>
-            <th class="px-6 py-3 font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-semibold text-[11px]" scope="col">Origen</th>
-            <th class="px-6 py-3 font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-semibold text-[11px]" scope="col">Destino</th>
-            <th class="px-6 py-3 font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-semibold text-[11px]" scope="col">Estado</th>
+            <th class="px-4 sm:px-6 py-3 font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-semibold text-[11px]" scope="col">Vehículo</th>
+            <th class="px-4 sm:px-6 py-3 font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-semibold text-[11px]" scope="col">Conductor</th>
+            <th class="px-4 sm:px-6 py-3 font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-semibold text-[11px]" scope="col">Origen</th>
+            <th class="px-4 sm:px-6 py-3 font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-semibold text-[11px]" scope="col">Destino</th>
+            <th class="px-4 sm:px-6 py-3 font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-semibold text-[11px]" scope="col">Estado</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-outline-variant/20 font-body-md text-body-md">
           {% for viaje in viajes_recientes %}
           <tr class="hover:bg-surface-container-low/60 transition-colors duration-150">
-            <td class="px-6 py-4 whitespace-nowrap">
+            <td class="px-4 sm:px-6 py-4 whitespace-nowrap">
               <div class="flex items-center gap-2">
                 <span class="material-symbols-outlined text-outline text-[18px]">local_shipping</span>
                 <span class="font-semibold text-primary">{{ viaje.vehiculo.modelo }} ({{ viaje.vehiculo.placa }})</span>
               </div>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-on-surface">{{ viaje.conductor.nombre_completo }}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-on-surface-variant">{{ viaje.ciudad_origen }}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-on-surface font-medium">{{ viaje.ciudad_destino }}</td>
-            <td class="px-6 py-4 whitespace-nowrap">
+            <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-on-surface">{{ viaje.conductor.nombre_completo }}</td>
+            <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-on-surface-variant">{{ viaje.ciudad_origen }}</td>
+            <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-on-surface font-medium">{{ viaje.ciudad_destino }}</td>
+            <td class="px-4 sm:px-6 py-4 whitespace-nowrap">
               {% if viaje.estado == 'En curso' %}
               <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-50 border border-blue-200 text-blue-800 font-label-sm text-label-sm font-semibold">
                 <span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>{{ viaje.estado }}
@@ -319,42 +315,40 @@
 
   <!-- SECCIÓN 3: Mantenimientos recientes -->
   <section class="bg-surface-container-lowest border border-outline-variant/40 rounded-xl shadow-xs overflow-hidden">
-    <div class="px-6 py-4 border-b border-outline-variant/30 flex items-center justify-between bg-surface-container-lowest">
+    <div class="px-4 sm:px-6 py-4 border-b border-outline-variant/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-surface-container-lowest">
       <div>
         <h2 class="font-headline-sm text-headline-sm font-bold text-primary">Mantenimientos recientes</h2>
         <p class="font-body-sm text-body-sm text-on-surface-variant">Últimas órdenes técnicas y servicios en taller de flota</p>
       </div>
-      <a href="{% url 'mantenimiento_lista' %}" class="px-3.5 py-1.5 rounded-lg border border-outline-variant text-primary font-label-md text-label-md hover:bg-surface-container-low transition-colors duration-150 flex items-center gap-1.5">
+      <a href="{% url 'mantenimiento_lista' %}" class="inline-flex self-start sm:self-auto items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-outline-variant text-primary font-label-md text-label-md hover:bg-surface-container-low transition-colors duration-150 flex-shrink-0">
         <span>Ver todos</span>
         <span class="material-symbols-outlined text-[16px]">chevron_right</span>
       </a>
     </div>
     <div class="overflow-x-auto">
-      <table class="w-full text-left border-collapse">
+      <table class="w-full text-left border-collapse min-w-[640px]">
         <thead>
           <tr class="bg-surface-bright border-b border-outline-variant/30">
-            <th class="px-6 py-3 font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-semibold text-[11px]" scope="col">ID Orden</th>
-            <th class="px-6 py-3 font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-semibold text-[11px]" scope="col">Vehículo</th>
-            <th class="px-6 py-3 font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-semibold text-[11px]" scope="col">Tipo</th>
-            <th class="px-6 py-3 font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-semibold text-[11px]" scope="col">Fecha</th>
-            <th class="px-6 py-3 font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-semibold text-[11px]" scope="col">Costo</th>
-            <th class="px-6 py-3 font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-semibold text-[11px]" scope="col">Estado</th>
-            <th class="px-6 py-3 font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-semibold text-[11px] text-right" scope="col">Detalle</th>
+            <th class="px-4 sm:px-6 py-3 font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-semibold text-[11px]" scope="col">ID Orden</th>
+            <th class="px-4 sm:px-6 py-3 font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-semibold text-[11px]" scope="col">Vehículo</th>
+            <th class="px-4 sm:px-6 py-3 font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-semibold text-[11px]" scope="col">Tipo</th>
+            <th class="px-4 sm:px-6 py-3 font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-semibold text-[11px]" scope="col">Fecha</th>
+            <th class="px-4 sm:px-6 py-3 font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-semibold text-[11px]" scope="col">Costo</th>
+            <th class="px-4 sm:px-6 py-3 font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-semibold text-[11px]" scope="col">Estado</th>
+            <th class="px-4 sm:px-6 py-3 font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-semibold text-[11px] text-right" scope="col">Detalle</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-outline-variant/20 font-body-md text-body-md">
           {% for m in mantenimientos_recientes %}
           <tr class="hover:bg-surface-container-low/60 transition-colors duration-150">
-            <td class="px-6 py-4 whitespace-nowrap font-tabular-data font-semibold text-secondary">
-              MNT-{{ m.id }}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
+            <td class="px-4 sm:px-6 py-4 whitespace-nowrap font-tabular-data font-semibold text-secondary">MNT-{{ m.id }}</td>
+            <td class="px-4 sm:px-6 py-4 whitespace-nowrap">
               <div class="flex items-center gap-2">
                 <span class="material-symbols-outlined text-outline text-[18px]">local_shipping</span>
                 <span class="font-semibold text-primary">{{ m.vehiculo.modelo }} ({{ m.vehiculo.placa }})</span>
               </div>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap">
+            <td class="px-4 sm:px-6 py-4 whitespace-nowrap">
               {% if m.tipo_mantenimiento == 'Preventivo' %}
               <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-semibold bg-blue-50 text-blue-800 border border-blue-200">{{ m.tipo_mantenimiento }}</span>
               {% elif m.tipo_mantenimiento == 'Correctivo' %}
@@ -363,9 +357,9 @@
               <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-semibold bg-purple-50 text-purple-800 border border-purple-200">{{ m.tipo_mantenimiento }}</span>
               {% endif %}
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-on-surface-variant font-tabular-data">{{ m.fecha_programada|date:"d M Y" }}</td>
-            <td class="px-6 py-4 whitespace-nowrap font-tabular-data font-semibold text-primary">$ {{ m.costo|floatformat:0 }}</td>
-            <td class="px-6 py-4 whitespace-nowrap">
+            <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-on-surface-variant font-tabular-data">{{ m.fecha_programada|date:"d M Y" }}</td>
+            <td class="px-4 sm:px-6 py-4 whitespace-nowrap font-tabular-data font-semibold text-primary">$ {{ m.costo|floatformat:0 }}</td>
+            <td class="px-4 sm:px-6 py-4 whitespace-nowrap">
               {% if m.estado == 'Programado' %}
               <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-50 border border-amber-300 text-amber-800 font-label-sm text-label-sm font-semibold">
                 <span class="material-symbols-outlined text-xs">schedule</span>{{ m.estado }}
@@ -380,7 +374,7 @@
               </span>
               {% endif %}
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-right">
+            <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-right">
               <a href="{% url 'mantenimiento_detalle' m.id %}" class="p-1.5 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-lg transition-colors inline-block" title="Ver detalle">
                 <span class="material-symbols-outlined text-[20px]">visibility</span>
               </a>
@@ -393,5 +387,6 @@
       </table>
     </div>
   </section>
+
 </div>
 {% endblock %}

@@ -3,7 +3,7 @@
 {% block title %}LogiCarga - Detalle de Carga #{{ carga.id }}{% endblock %}
 
 {% block header_title %}Detalle de Carga de Combustible{% endblock %}
-{% block header_subtitle %}Comprobante telemático, volumen abastecido y liquidación económica de la recarga{% endblock %}
+{% block header_subtitle %}Comprobante telemático, volumen abastecido y auditoría contable de la recarga{% endblock %}
 
 {% block content %}
 <div class="space-y-6">
@@ -25,22 +25,37 @@
     </div>
   </div>
 
-  <!-- 1. AUDIT & TELEMETRY BANNER -->
-  <section class="bg-surface-container-lowest rounded-xl border border-outline-variant/40 p-5 shadow-xs flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 border-l-4 border-l-emerald-600">
+  <!-- 1. AUDIT & STATUS BANNER -->
+  <section class="bg-surface-container-lowest rounded-xl border border-outline-variant/40 p-5 shadow-xs flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 {% if carga.estado == 'Aprobado' %}border-l-4 border-l-emerald-600{% elif carga.estado == 'Rechazado' %}border-l-4 border-l-rose-600{% else %}border-l-4 border-l-amber-500{% endif %}">
     <div class="flex items-center gap-4">
-      <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center border border-emerald-200 shrink-0">
-        <span class="material-symbols-outlined text-2xl">verified</span>
+      <div class="w-12 h-12 rounded-xl {% if carga.estado == 'Aprobado' %}bg-emerald-50 text-emerald-700 border border-emerald-200{% elif carga.estado == 'Rechazado' %}bg-rose-50 text-rose-700 border border-rose-200{% else %}bg-amber-50 text-amber-700 border border-amber-200{% endif %} flex items-center justify-center shrink-0">
+        <span class="material-symbols-outlined text-2xl">
+          {% if carga.estado == 'Aprobado' %}verified{% elif carga.estado == 'Rechazado' %}cancel{% else %}pending_actions{% endif %}
+        </span>
       </div>
       <div>
-        <div class="flex items-center gap-2.5">
-          <h2 class="font-headline-sm text-headline-sm text-primary font-semibold">Carga Verificada por Telemetría CAN-bus</h2>
+        <div class="flex items-center gap-2.5 flex-wrap">
+          <h2 class="font-headline-sm text-headline-sm text-primary font-semibold">Estado de Auditoría: {{ carga.estado }}</h2>
+          {% if carga.estado == 'Aprobado' %}
           <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 font-label-sm text-label-sm uppercase font-bold">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-700"></span>
-            Aprobado
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-700"></span> Aprobado
           </span>
+          {% elif carga.estado == 'Rechazado' %}
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-800 border border-rose-300 font-label-sm text-label-sm uppercase font-bold">
+            <span class="w-1.5 h-1.5 rounded-full bg-rose-700"></span> Rechazado
+          </span>
+          {% else %}
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300 font-label-sm text-label-sm uppercase font-bold">
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-700"></span> Pendiente por validar
+          </span>
+          {% endif %}
         </div>
         <p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
-          Sincronización telemática directa sin discrepancias entre el surtidor de la estación EDS y los sensores volumétricos.
+          {% if carga.observacion_admin %}
+            <strong>Nota de administración:</strong> {{ carga.observacion_admin }}
+          {% else %}
+            Registro ingresado para control volumétrico y financiero de la flota.
+          {% endif %}
         </p>
       </div>
     </div>
@@ -92,7 +107,7 @@
       </div>
     </div>
 
-    <!-- Tarjeta 4: Rendimiento Estimado -->
+    <!-- Tarjeta 4: Ciudad -->
     <div class="bg-surface-container-lowest rounded-xl border border-outline-variant/40 p-5 shadow-xs hover:border-outline transition-all duration-150">
       <div class="flex items-center justify-between">
         <span class="font-label-md text-label-md text-on-surface-variant uppercase text-[11px]">Ciudad y Estación</span>
@@ -106,7 +121,7 @@
     </div>
   </section>
 
-  <!-- 3. DETAILED VIEW & CAN-BUS TELEMETRY GRID -->
+  <!-- 3. DETAILED VIEW & EVIDENCE / AUDIT GRID -->
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <!-- Main Query Record Card -->
     <div class="lg:col-span-2 bg-surface-container-lowest rounded-xl border border-outline-variant/40 shadow-xs overflow-hidden flex flex-col justify-between">
@@ -118,7 +133,7 @@
             </div>
             <div>
               <h3 class="font-headline-sm text-headline-sm text-primary font-bold">Ficha Técnica de Carga</h3>
-              <p class="font-body-sm text-body-sm text-on-surface-variant">Registro maestro validado por estación de servicio autorizada</p>
+              <p class="font-body-sm text-body-sm text-on-surface-variant">Registro maestro validado por estación de servicio</p>
             </div>
           </div>
           <span class="inline-flex items-center px-3 py-1 rounded-full bg-surface-container font-label-sm text-label-sm text-primary font-bold border border-outline-variant/60">
@@ -190,31 +205,63 @@
       </div>
     </div>
 
-    <!-- Right Column: Telemetry CAN-bus -->
-    <div class="bg-surface-container-lowest rounded-xl border border-outline-variant/40 p-6 shadow-xs space-y-4">
-      <div class="flex items-center justify-between pb-4 border-b border-outline-variant/30">
-        <div class="flex items-center gap-2.5">
-          <span class="material-symbols-outlined text-primary text-xl">sensors</span>
-          <h3 class="font-headline-sm text-headline-sm text-primary font-bold">Telemetría CAN-bus</h3>
+    <!-- Right Column: Evidence Photo & Admin Approval Panel -->
+    <div class="space-y-6">
+      
+      <!-- Foto de Factura / Evidencia -->
+      <div class="bg-surface-container-lowest rounded-xl border border-outline-variant/40 p-5 shadow-xs space-y-3">
+        <div class="flex items-center justify-between pb-3 border-b border-outline-variant/30">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-xl">image</span>
+            <h3 class="font-headline-sm text-headline-sm text-primary font-bold">Comprobante Adjunto</h3>
+          </div>
         </div>
-        <span class="font-label-sm text-label-sm text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Enlace Activo</span>
+        {% if carga.foto_evidencia %}
+        <div class="rounded-xl overflow-hidden border border-outline-variant/30 bg-black/5 flex items-center justify-center">
+          <a href="{{ carga.foto_evidencia.url }}" target="_blank" title="Clic para ampliar comprobante">
+            <img src="{{ carga.foto_evidencia.url }}" alt="Comprobante de carga de combustible" class="max-h-64 object-contain hover:scale-102 transition-transform cursor-zoom-in">
+          </a>
+        </div>
+        <p class="text-center font-body-sm text-body-sm text-on-surface-variant text-xs">Haga clic en la imagen para ver en alta resolución</p>
+        {% else %}
+        <div class="py-8 text-center text-outline">
+          <span class="material-symbols-outlined text-3xl block mb-1">no_photography</span>
+          <p class="text-body-sm">No se adjuntó foto de comprobante en el registro.</p>
+        </div>
+        {% endif %}
       </div>
-      <div class="py-3 space-y-3">
-        <div class="p-3 bg-surface-container-low rounded-lg border border-outline-variant/40">
-          <span class="block font-label-sm text-on-surface-variant uppercase text-[11px]">Volumen Registrado</span>
-          <span class="font-tabular-data font-bold text-primary text-lg">{{ carga.litros_cargados }} L</span>
+
+      <!-- Panel de Decisión del Administrador -->
+      {% if is_admin %}
+      <div class="bg-surface-container-lowest rounded-xl border border-outline-variant/40 p-5 shadow-xs space-y-4">
+        <div class="flex items-center gap-2 pb-3 border-b border-outline-variant/30">
+          <span class="material-symbols-outlined text-primary text-xl">how_to_reg</span>
+          <h3 class="font-headline-sm text-headline-sm text-primary font-bold">Auditoría Administrativa</h3>
         </div>
-        <div class="p-3 bg-surface-container-low rounded-lg border border-outline-variant/40">
-          <span class="block font-label-sm text-on-surface-variant uppercase text-[11px]">Precio por Litro</span>
-          <span class="font-tabular-data font-bold text-primary text-lg">
-            {% if carga.litros_cargados > 0 %}
-              ${% widthratio carga.costo_total carga.litros_cargados 1 %} COP/L
-            {% else %}
-              $0 COP/L
-            {% endif %}
-          </span>
-        </div>
+
+        <form method="post" action="{% url 'combustible_cambiar_estado' carga.id %}" class="space-y-3">
+          {% csrf_token %}
+          <div>
+            <label class="block font-label-sm text-label-sm text-on-surface-variant font-medium mb-1">Decisión:</label>
+            <select name="estado" class="w-full h-10 px-3 rounded-lg border border-outline-variant bg-surface-container-lowest font-body-md text-body-md text-primary font-medium focus:border-primary focus:ring-1 focus:ring-primary cursor-pointer">
+              <option value="Pendiente" {% if carga.estado == 'Pendiente' %}selected{% endif %}>Pendiente</option>
+              <option value="Aprobado" {% if carga.estado == 'Aprobado' %}selected{% endif %}>Aprobado (Factura y volumen válidos)</option>
+              <option value="Rechazado" {% if carga.estado == 'Rechazado' %}selected{% endif %}>Rechazado (Factura ilegible o no válida)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-label-sm text-label-sm text-on-surface-variant font-medium mb-1">Observaciones de Auditoría:</label>
+            <textarea name="observacion_admin" rows="2" placeholder="Observaciones o justificación..." class="w-full p-2.5 rounded-lg border border-outline-variant bg-surface-container-lowest font-body-md text-body-md text-primary focus:border-primary focus:ring-1 focus:ring-primary resize-none">{{ carga.observacion_admin }}</textarea>
+          </div>
+
+          <button type="submit" class="w-full h-10 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md font-semibold transition-colors shadow-xs">
+            Guardar Decisión
+          </button>
+        </form>
       </div>
+      {% endif %}
+
     </div>
   </div>
 </div>

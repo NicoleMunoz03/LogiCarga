@@ -1,9 +1,18 @@
 {% comment %}
 Componente Sidebar Unificado - LogiCarga Transportes S.A.
 Adapta automáticamente la navegación según el rol del usuario (Administrador vs Conductor).
+En móvil funciona como drawer deslizable; en escritorio permanece fijo.
 {% endcomment %}
-<aside class="fixed top-0 left-0 h-screen w-64 border-r border-outline-variant/40 bg-surface-container-lowest z-40 shadow-sm flex flex-col justify-between p-4 select-none">
+<aside id="sidebar-drawer" class="fixed top-0 left-0 h-screen w-64 border-r border-outline-variant/40 bg-surface-container-lowest z-50 shadow-lg flex flex-col justify-between p-4 select-none -translate-x-full lg:translate-x-0">
   <div class="space-y-5">
+    <!-- Mobile Close Button -->
+    <div class="flex items-center justify-between lg:hidden mb-1">
+      <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Menú</span>
+      <button onclick="closeSidebar()" aria-label="Cerrar menú" class="p-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-primary transition-colors">
+        <span class="material-symbols-outlined text-[22px]">close</span>
+      </button>
+    </div>
+
     <!-- Header Brand -->
     <a href="{% if is_admin %}{% url 'dashboard' %}{% else %}{% url 'mis_viajes' %}{% endif %}" class="flex items-center gap-3 px-2 py-1 group transition-opacity hover:opacity-90">
       <div class="w-10 h-10 rounded-lg bg-primary flex items-center justify-center text-on-primary shadow-sm group-hover:bg-primary-container transition-colors">
@@ -71,11 +80,24 @@ Adapta automáticamente la navegación según el rol del usuario (Administrador 
           <span>Mantenimientos</span>
         </a>
 
+        <!-- Viáticos (Administrador) -->
+        <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-body-md transition-colors duration-150 {% if request.resolver_match.url_name in 'viaticos_admin viatico_cambiar_estado' %}bg-surface-container-low text-primary font-label-lg font-semibold border-l-4 border-primary shadow-xs{% else %}text-on-surface-variant font-body-md hover:bg-surface-container hover:text-on-surface{% endif %}" href="{% url 'viaticos_admin' %}">
+          <span class="material-symbols-outlined text-[20px]" {% if request.resolver_match.url_name in 'viaticos_admin viatico_cambiar_estado' %}style="font-variation-settings: 'FILL' 1;"{% endif %}>receipt_long</span>
+          <span>Viáticos</span>
+        </a>
+
+        <!-- Incidentes (Administrador) -->
+        <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-body-md transition-colors duration-150 {% if request.resolver_match.url_name in 'incidentes_admin incidente_cambiar_estado' %}bg-surface-container-low text-primary font-label-lg font-semibold border-l-4 border-primary shadow-xs{% else %}text-on-surface-variant font-body-md hover:bg-surface-container hover:text-on-surface{% endif %}" href="{% url 'incidentes_admin' %}">
+          <span class="material-symbols-outlined text-[20px]" {% if request.resolver_match.url_name in 'incidentes_admin incidente_cambiar_estado' %}style="font-variation-settings: 'FILL' 1;"{% endif %}>report_problem</span>
+          <span>Incidentes</span>
+        </a>
+
         <!-- Reportes -->
         <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-body-md transition-colors duration-150 {% if request.resolver_match.url_name in 'reportes_index reporte_consumo reporte_operacional' %}bg-surface-container-low text-primary font-label-lg font-semibold border-l-4 border-primary shadow-xs{% else %}text-on-surface-variant font-body-md hover:bg-surface-container hover:text-on-surface{% endif %}" href="{% url 'reportes_index' %}">
           <span class="material-symbols-outlined text-[20px]" {% if request.resolver_match.url_name in 'reportes_index reporte_consumo reporte_operacional' %}style="font-variation-settings: 'FILL' 1;"{% endif %}>analytics</span>
           <span>Reportes</span>
         </a>
+
       {% else %}
         <!-- Mis Viajes (Conductor) -->
         <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-body-md transition-colors duration-150 {% if request.resolver_match.url_name == 'mis_viajes' %}bg-surface-container-low text-primary font-label-lg font-semibold border-l-4 border-primary shadow-xs{% else %}text-on-surface-variant font-body-md hover:bg-surface-container hover:text-on-surface{% endif %}" href="{% url 'mis_viajes' %}">
@@ -87,6 +109,18 @@ Adapta automáticamente la navegación según el rol del usuario (Administrador 
         <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-body-md transition-colors duration-150 {% if request.resolver_match.url_name in 'combustible_crear combustible_detalle' %}bg-surface-container-low text-primary font-label-lg font-semibold border-l-4 border-primary shadow-xs{% else %}text-on-surface-variant font-body-md hover:bg-surface-container hover:text-on-surface{% endif %}" href="{% url 'combustible_crear' %}">
           <span class="material-symbols-outlined text-[20px]" {% if request.resolver_match.url_name in 'combustible_crear combustible_detalle' %}style="font-variation-settings: 'FILL' 1;"{% endif %}>local_gas_station</span>
           <span>Registrar Combustible</span>
+        </a>
+
+        <!-- Mis Viáticos (Conductor) -->
+        <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-body-md transition-colors duration-150 {% if request.resolver_match.url_name in 'mis_viaticos viatico_crear viatico_detalle' %}bg-surface-container-low text-primary font-label-lg font-semibold border-l-4 border-primary shadow-xs{% else %}text-on-surface-variant font-body-md hover:bg-surface-container hover:text-on-surface{% endif %}" href="{% url 'mis_viaticos' %}">
+          <span class="material-symbols-outlined text-[20px]" {% if request.resolver_match.url_name in 'mis_viaticos viatico_crear viatico_detalle' %}style="font-variation-settings: 'FILL' 1;"{% endif %}>receipt_long</span>
+          <span>Mis Viáticos</span>
+        </a>
+
+        <!-- Mis Incidentes (Conductor) -->
+        <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-body-md transition-colors duration-150 {% if request.resolver_match.url_name in 'mis_incidentes incidente_reportar incidente_detalle' %}bg-surface-container-low text-primary font-label-lg font-semibold border-l-4 border-primary shadow-xs{% else %}text-on-surface-variant font-body-md hover:bg-surface-container hover:text-on-surface{% endif %}" href="{% url 'mis_incidentes' %}">
+          <span class="material-symbols-outlined text-[20px]" {% if request.resolver_match.url_name in 'mis_incidentes incidente_reportar incidente_detalle' %}style="font-variation-settings: 'FILL' 1;"{% endif %}>report_problem</span>
+          <span>Mis Incidentes</span>
         </a>
       {% endif %}
     </nav>

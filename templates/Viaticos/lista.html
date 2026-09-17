@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block title %}LogiCarga – Mis Viáticos{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+  <!-- ── ENCABEZADO ── -->
+  <section class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <h1 class="font-headline-xl text-headline-xl text-primary tracking-tight font-bold">Mis Viáticos</h1>
+      <p class="font-body-md text-body-md text-on-surface-variant mt-1">Consulta de gastos registrados durante los viajes asignados</p>
+    </div>
+    <a href="{% url 'viatico_crear' %}"
+       class="inline-flex items-center gap-2 bg-primary hover:bg-primary-container text-on-primary py-2.5 px-5 rounded-lg font-label-lg text-label-lg transition-all shadow-sm hover:shadow-md shrink-0">
+      <span class="material-symbols-outlined text-[18px]">add</span>
+      <span>+ Registrar Viático</span>
+    </a>
+  </section>
+
+  <!-- ── KPIs ── -->
+  <section class="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-5">
+
+    <!-- Total registros -->
+    <div class="bg-surface-container-lowest border border-outline-variant/40 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+      <div class="flex items-center justify-between mb-2">
+        <span class="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant">Total registrados</span>
+        <div class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined text-[18px]">assignment</span>
+        </div>
+      </div>
+      <div class="font-headline-xl text-headline-xl text-primary font-bold">{{ total }}</div>
+      <div class="flex items-center gap-2 mt-2 pt-2 border-t border-surface-container-high font-body-sm text-body-sm text-on-surface-variant">
+        <span class="text-emerald-700 font-medium flex items-center gap-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 inline-block"></span>
+          {{ aprobados }} aprobados
+        </span>
+        <span class="text-outline-variant">•</span>
+        <span class="text-amber-700 font-medium flex items-center gap-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block"></span>
+          {{ en_validacion }} en revisión
+        </span>
+      </div>
+    </div>
+
+    <!-- Total monto -->
+    <div class="bg-surface-container-lowest border border-outline-variant/40 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+      <div class="flex items-center justify-between mb-2">
+        <span class="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant">Valor total registrado</span>
+        <div class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined text-[18px]">payments</span>
+        </div>
+      </div>
+      <div class="font-headline-xl text-headline-xl text-primary font-bold font-tabular-data">
+        $&nbsp;{{ total_monto|floatformat:0 }}
+        <span class="font-body-sm text-body-sm text-on-surface-variant font-normal">COP</span>
+      </div>
+      <div class="mt-2 pt-2 border-t border-surface-container-high font-body-sm text-body-sm text-on-surface-variant">
+        Suma de todos los gastos registrados
+      </div>
+    </div>
+
+    <!-- Pendiente reembolso -->
+    <div class="bg-surface-container-lowest border border-outline-variant/40 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+      <div class="flex items-center justify-between mb-2">
+        <span class="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant">Pendiente reembolso</span>
+        <div class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center text-amber-700">
+          <span class="material-symbols-outlined text-[18px]">pending_actions</span>
+        </div>
+      </div>
+      <div class="font-headline-xl text-headline-xl text-primary font-bold font-tabular-data">
+        $&nbsp;{{ pendiente_reembolso|floatformat:0 }}
+        <span class="font-body-sm text-body-sm text-on-surface-variant font-normal">COP</span>
+      </div>
+      <div class="mt-2 pt-2 border-t border-surface-container-high flex items-center gap-2">
+        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-label-sm font-label-sm bg-amber-50 text-amber-800 border border-amber-200">
+          <span class="w-1 h-1 rounded-full bg-amber-500 inline-block"></span>
+          En validación de facturas
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── TABLA ── -->
+  <section class="bg-surface-container-lowest border border-outline-variant/40 rounded-xl shadow-sm overflow-hidden">
+
+    {% if viaticos %}
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-surface-bright border-b border-outline-variant/30 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider h-11">
+            <th class="py-3 px-5 font-semibold text-[11px]">Fecha</th>
+            <th class="py-3 px-5 font-semibold text-[11px]">Viaje</th>
+            <th class="py-3 px-5 font-semibold text-[11px]">Tipo de Gasto</th>
+            <th class="py-3 px-5 font-semibold text-[11px]">Estado</th>
+            <th class="py-3 px-5 font-semibold text-[11px] text-right">Valor</th>
+            <th class="py-3 px-5 font-semibold text-[11px] text-center">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-outline-variant/20 font-body-md text-body-md text-on-surface">
+          {% for vtc in viaticos %}
+          <tr class="hover:bg-surface-container-low/60 transition-colors duration-150">
+
+            <!-- Fecha -->
+            <td class="py-4 px-5 whitespace-nowrap">
+              <div class="font-body-md font-medium text-on-surface">{{ vtc.fecha_gasto|date:"d M Y" }}</div>
+            </td>
+
+            <!-- Viaje -->
+            <td class="py-4 px-5">
+              <div class="font-label-lg text-label-lg text-primary">VJ-{{ vtc.viaje.id|stringformat:"05d" }}</div>
+              <div class="font-body-sm text-body-sm text-on-surface-variant truncate max-w-xs">{{ vtc.viaje.ciudad_origen }} → {{ vtc.viaje.ciudad_destino }}</div>
+            </td>
+
+            <!-- Tipo gasto -->
+            <td class="py-4 px-5 whitespace-nowrap">
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-label-sm font-label-sm uppercase bg-blue-50 text-blue-700 border border-blue-200">
+                <span class="w-1.5 h-1.5 rounded-full bg-blue-600 inline-block"></span>
+                {{ vtc.tipo_gasto }}
+              </span>
+            </td>
+
+            <!-- Estado -->
+            <td class="py-4 px-5 whitespace-nowrap">
+              {% if vtc.estado == 'Aprobado' %}
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-label-sm text-label-sm bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 inline-block"></span> Aprobado
+              </span>
+              {% elif vtc.estado == 'Reembolsado' %}
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-label-sm text-label-sm bg-blue-50 text-blue-700 border border-blue-200">
+                <span class="w-1.5 h-1.5 rounded-full bg-blue-600 inline-block"></span> Reembolsado
+              </span>
+              {% elif vtc.estado == 'Rechazado' %}
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-label-sm text-label-sm bg-red-50 text-red-700 border border-red-200">
+                <span class="w-1.5 h-1.5 rounded-full bg-red-600 inline-block"></span> Rechazado
+              </span>
+              {% else %}
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-label-sm text-label-sm bg-amber-50 text-amber-800 border border-amber-200">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block"></span> En validación
+              </span>
+              {% endif %}
+            </td>
+
+            <!-- Valor -->
+            <td class="py-4 px-5 text-right whitespace-nowrap">
+              <span class="font-tabular-data text-tabular-data font-semibold text-on-surface">
+                $&nbsp;{{ vtc.monto|floatformat:0 }}
+                <span class="text-[11px] font-normal text-on-surface-variant">COP</span>
+              </span>
+            </td>
+
+            <!-- Acciones -->
+            <td class="py-4 px-5 text-center whitespace-nowrap">
+              <a href="{% url 'viatico_detalle' vtc.id %}"
+                 class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-outline-variant hover:border-primary text-primary hover:bg-surface-container-low font-label-md text-label-md transition-all">
+                <span class="material-symbols-outlined text-[15px]">visibility</span>
+                <span>Ver detalle</span>
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% else %}
+    <!-- Estado vacío -->
+    <div class="flex flex-col items-center justify-center py-16 px-4 text-center">
+      <div class="w-16 h-16 rounded-2xl bg-surface-container flex items-center justify-center mb-4">
+        <span class="material-symbols-outlined text-[32px] text-on-surface-variant">receipt_long</span>
+      </div>
+      <h2 class="font-headline-sm text-headline-sm font-semibold text-primary mb-1">Sin viáticos registrados</h2>
+      <p class="font-body-md text-body-md text-on-surface-variant mb-5 max-w-sm">
+        No has registrado gastos en tus viajes asignados aún. Comienza registrando tu primer viático.
+      </p>
+      <a href="{% url 'viatico_crear' %}"
+         class="inline-flex items-center gap-2 bg-primary text-on-primary px-5 py-2.5 rounded-lg font-label-lg text-label-lg hover:bg-primary-container transition-colors shadow-sm">
+        <span class="material-symbols-outlined text-[18px]">add</span>
+        Registrar primer viático
+      </a>
+    </div>
+    {% endif %}
+  </section>
+
+  <!-- ── INFO POLÍTICA ── -->
+  <section class="bg-surface-container-low rounded-xl p-5 border border-outline-variant/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+    <div class="flex items-start gap-3">
+      <div class="w-10 h-10 rounded-lg bg-surface-container-lowest border border-outline-variant/30 flex items-center justify-center text-primary shadow-xs shrink-0">
+        <span class="material-symbols-outlined text-[20px]">info</span>
+      </div>
+      <div>
+        <h2 class="font-headline-sm text-headline-sm font-semibold text-on-surface">Reglas de radicación de comprobantes</h2>
+        <p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+          Todo viático por monto superior a $50,000 COP requiere fotografía nítida de factura fiscal (NIT legible). Plazo máximo de radicación: 5 días hábiles.
+        </p>
+      </div>
+    </div>
+  </section>
+
+</div>
+{% endblock %}

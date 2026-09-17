@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block title %}LogiCarga – Mis Incidentes{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+  <!-- ── ENCABEZADO ── -->
+  <section class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <h1 class="font-headline-xl text-headline-xl text-primary tracking-tight font-bold">Mis Incidentes</h1>
+      <p class="font-body-md text-body-md text-on-surface-variant mt-1">Consulta y gestión de novedades e incidentes reportados en ruta</p>
+    </div>
+    <a href="{% url 'incidente_reportar' %}"
+       class="inline-flex items-center gap-2 bg-primary hover:bg-primary-container text-on-primary py-2.5 px-5 rounded-lg font-label-lg text-label-lg transition-all shadow-sm hover:shadow-md shrink-0">
+      <span class="material-symbols-outlined text-[18px]">report_problem</span>
+      <span>+ Reportar Incidente</span>
+    </a>
+  </section>
+
+  <!-- ── KPIs ── -->
+  <section class="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-5">
+
+    <!-- Total -->
+    <div class="bg-surface-container-lowest border border-outline-variant/40 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+      <div class="flex items-center justify-between mb-2">
+        <span class="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant">Total reportados</span>
+        <div class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined text-[20px]">report_problem</span>
+        </div>
+      </div>
+      <div class="font-headline-xl text-headline-xl text-primary font-bold">{{ total }}</div>
+      <p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Historial completo en asignación actual</p>
+    </div>
+
+    <!-- Pendientes -->
+    <div class="bg-surface-container-lowest border border-outline-variant/40 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+      <div class="flex items-center justify-between mb-2">
+        <span class="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant">Pendientes</span>
+        <div class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center text-amber-700">
+          <span class="material-symbols-outlined text-[20px]">pending_actions</span>
+        </div>
+      </div>
+      <div class="flex items-baseline gap-2 mb-1">
+        <span class="font-headline-xl text-headline-xl text-primary font-bold">{{ pendientes }}</span>
+        {% if pendientes > 0 %}
+        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200">En atención</span>
+        {% endif %}
+      </div>
+      <p class="font-body-sm text-body-sm text-on-surface-variant">Reportados o en revisión por Despacho</p>
+    </div>
+
+    <!-- Resueltos -->
+    <div class="bg-surface-container-lowest border border-outline-variant/40 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+      <div class="flex items-center justify-between mb-2">
+        <span class="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant">Resueltos</span>
+        <div class="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-700">
+          <span class="material-symbols-outlined text-[20px]">check_circle</span>
+        </div>
+      </div>
+      <div class="flex items-baseline gap-2 mb-1">
+        <span class="font-headline-xl text-headline-xl text-primary font-bold">{{ resueltos }}</span>
+        {% if total > 0 %}
+        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">{{ tasa_resolucion }}% resolución</span>
+        {% endif %}
+      </div>
+      <p class="font-body-sm text-body-sm text-on-surface-variant">Cerrados satisfactoriamente</p>
+    </div>
+  </section>
+
+  <!-- ── TABLA DE INCIDENTES ── -->
+  <section class="bg-surface-container-lowest border border-outline-variant/40 rounded-xl shadow-sm overflow-hidden">
+
+    {% if incidentes %}
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-surface-bright border-b border-outline-variant/30 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider h-11">
+            <th class="py-3 px-5 font-semibold text-[11px]">Fecha</th>
+            <th class="py-3 px-5 font-semibold text-[11px]">Viaje</th>
+            <th class="py-3 px-5 font-semibold text-[11px]">Tipo de Incidente</th>
+            <th class="py-3 px-5 font-semibold text-[11px]">Lugar</th>
+            <th class="py-3 px-5 font-semibold text-[11px]">Estado</th>
+            <th class="py-3 px-5 font-semibold text-[11px] text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-outline-variant/20 font-body-md text-body-md text-on-surface">
+          {% for inc in incidentes %}
+          <tr class="hover:bg-surface-container-low/60 transition-colors duration-150">
+
+            <!-- Fecha -->
+            <td class="py-4 px-5 whitespace-nowrap">
+              <div class="flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-outline text-[16px]">calendar_today</span>
+                <span class="font-tabular-data text-tabular-data font-medium text-primary">{{ inc.fecha_incidente|date:"d M Y" }}</span>
+              </div>
+              <div class="font-body-sm text-body-sm text-on-surface-variant ml-5">{{ inc.fecha_incidente|time:"H:i" }}</div>
+            </td>
+
+            <!-- Viaje -->
+            <td class="py-4 px-5">
+              <div class="font-label-lg text-label-lg text-primary">VJ-{{ inc.viaje.id|stringformat:"05d" }}</div>
+              <div class="font-body-sm text-body-sm text-on-surface-variant">{{ inc.viaje.ciudad_origen }} → {{ inc.viaje.ciudad_destino }}</div>
+            </td>
+
+            <!-- Tipo -->
+            <td class="py-4 px-5">
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-800 border border-blue-200">
+                <span class="material-symbols-outlined text-[15px] text-blue-700">build_circle</span>
+                {{ inc.tipo_incidente }}
+              </span>
+            </td>
+
+            <!-- Lugar -->
+            <td class="py-4 px-5">
+              <span class="font-body-sm text-body-sm text-on-surface-variant">{{ inc.lugar }}</span>
+            </td>
+
+            <!-- Estado -->
+            <td class="py-4 px-5">
+              {% if inc.estado == 'Resuelto' %}
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-label-sm text-label-sm bg-emerald-50 text-emerald-700 border border-emerald-300">
+                <span class="material-symbols-outlined text-[13px]">check</span> Resuelto
+              </span>
+              {% elif inc.estado == 'En Revisión' %}
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-label-sm text-label-sm bg-amber-50 text-amber-800 border border-amber-300">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block"></span> En Revisión
+              </span>
+              {% else %}
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-label-sm text-label-sm bg-blue-50 text-blue-700 border border-blue-200">
+                <span class="w-1.5 h-1.5 rounded-full bg-blue-600 inline-block"></span> Reportado
+              </span>
+              {% endif %}
+            </td>
+
+            <!-- Acciones -->
+            <td class="py-4 px-5 text-right">
+              <a href="{% url 'incidente_detalle' inc.id %}"
+                 class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-outline-variant hover:border-primary text-primary hover:bg-surface-container-low font-label-md text-label-md transition-all">
+                <span class="material-symbols-outlined text-[15px]">visibility</span>
+                <span>Ver detalle</span>
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% else %}
+    <!-- Estado vacío -->
+    <div class="flex flex-col items-center justify-center py-16 px-4 text-center">
+      <div class="w-16 h-16 rounded-2xl bg-surface-container flex items-center justify-center mb-4">
+        <span class="material-symbols-outlined text-[32px] text-on-surface-variant">report_problem</span>
+      </div>
+      <h2 class="font-headline-sm text-headline-sm font-semibold text-primary mb-1">Sin incidentes registrados</h2>
+      <p class="font-body-md text-body-md text-on-surface-variant mb-5 max-w-sm">
+        No tienes incidentes reportados en tus viajes asignados. ¡Excelente registro!
+      </p>
+      <a href="{% url 'incidente_reportar' %}"
+         class="inline-flex items-center gap-2 bg-primary text-on-primary px-5 py-2.5 rounded-lg font-label-lg text-label-lg hover:bg-primary-container transition-colors shadow-sm">
+        <span class="material-symbols-outlined text-[18px]">add</span>
+        Reportar primer incidente
+      </a>
+    </div>
+    {% endif %}
+  </section>
+
+  <!-- ── BANNER EMERGENCIA ── -->
+  <section class="bg-primary-container text-on-primary rounded-xl p-5 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+    <div class="flex items-center gap-4">
+      <div class="w-11 h-11 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
+        <span class="material-symbols-outlined text-2xl text-amber-300">headset_mic</span>
+      </div>
+      <div>
+        <h2 class="font-headline-sm text-headline-sm font-semibold">Línea de Emergencia Logística 24/7</h2>
+        <p class="font-body-sm text-body-sm opacity-80">¿Emergencia mecánica, médica o bloqueo crítico? Comuníquese de inmediato con la central de operaciones.</p>
+      </div>
+    </div>
+    <a href="tel:018009999"
+       class="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white py-2.5 px-4 rounded-lg font-label-lg text-label-lg transition-colors shadow-sm shrink-0 w-full md:w-auto justify-center">
+      <span class="material-symbols-outlined text-[18px]">phone_in_talk</span>
+      <span>Llamar Central</span>
+    </a>
+  </section>
+
+</div>
+{% endblock %}

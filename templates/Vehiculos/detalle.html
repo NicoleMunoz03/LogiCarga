@@ -1,0 +1,432 @@
+{% extends "base.html" %}
+
+{% block title %}LogiCarga – Detalle del Vehículo {{ vehiculo.placa }}{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+  <!-- ── ENCABEZADO Y ACCIONES PRINCIPALES ── -->
+  <section class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div class="flex items-center gap-3">
+      <a href="{% url 'vehiculos_lista' %}" class="p-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors inline-flex items-center" title="Volver al listado">
+        <span class="material-symbols-outlined text-[24px]">arrow_back</span>
+      </a>
+      <div>
+        <div class="flex items-center gap-2.5 flex-wrap">
+          <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight font-bold">{{ vehiculo.placa }}</h1>
+          
+          <!-- Estado Actual Badge con Selector Rápido de Estado -->
+          <form method="post" action="{% url 'vehiculo_cambiar_estado' vehiculo.id %}" class="inline-flex items-center gap-1.5">
+            {% csrf_token %}
+            <select name="estado" onchange="this.form.submit()" class="h-8 px-2.5 rounded-full text-label-sm font-semibold border cursor-pointer transition-colors {% if vehiculo.estado == 'Disponible' %}bg-emerald-50 border-emerald-300 text-emerald-800{% elif vehiculo.estado == 'En viaje' %}bg-blue-50 border-blue-300 text-blue-800{% else %}bg-amber-50 border-amber-300 text-amber-800{% endif %}" title="Clic para cambiar estado del vehículo">
+              <option value="Disponible" {% if vehiculo.estado == 'Disponible' %}selected{% endif %}>● Disponible</option>
+              <option value="En viaje" {% if vehiculo.estado == 'En viaje' %}selected{% endif %}>● En viaje</option>
+              <option value="Mantenimiento" {% if vehiculo.estado == 'Mantenimiento' %}selected{% endif %}>● Mantenimiento</option>
+            </select>
+          </form>
+        </div>
+        <p class="font-body-md text-body-md text-on-surface-variant mt-0.5">{{ vehiculo.modelo }} · Capacidad de carga: {{ vehiculo.capacidad_carga }} kg</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2.5 flex-wrap">
+      <a href="{% url 'mantenimiento_crear' %}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md border border-outline-variant/30 transition-colors">
+        <span class="material-symbols-outlined text-[18px]">build</span>
+        <span>Programar Mantenimiento</span>
+      </a>
+      <a href="{% url 'viaje_crear' %}" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md font-semibold shadow-sm transition-colors">
+        <span class="material-symbols-outlined text-[18px]">route</span>
+        <span>Despachar Viaje</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- ── CARD DE CONTROL DE MANTENIMIENTO PREVENTIVO (CADA 30.000 KM) ── -->
+  <section class="bg-surface-container-lowest border {% if vehiculo.requiere_mantenimiento_preventivo %}border-amber-300 bg-amber-50/20{% else %}border-outline-variant/30{% endif %} rounded-xl p-5 shadow-xs">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div class="space-y-1.5 flex-1">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined {% if vehiculo.requiere_mantenimiento_preventivo %}text-amber-600{% else %}text-primary{% endif %} text-[22px]">build_circle</span>
+          <h2 class="font-headline-sm text-headline-sm font-bold text-primary">Regla de Mantenimiento Preventivo (Cada 30.000 km)</h2>
+          {% if vehiculo.requiere_mantenimiento_preventivo %}
+          <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300 font-label-sm text-label-sm font-bold animate-pulse">
+            Atención Requerida
+          </span>
+          {% else %}
+          <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 font-label-sm text-label-sm font-semibold">
+            Ciclo Óptimo
+          </span>
+          {% endif %}
+        </div>
+        <p class="font-body-sm text-body-sm text-on-surface-variant">
+          Norma de flota: Cada unidad debe ingresar a revisión preventiva obligatoria cada 30.000 km de rodamiento.
+        </p>
+
+        <!-- Barra de Progreso del Ciclo de 30.000 km -->
+        <div class="pt-2 max-w-2xl">
+          <div class="flex items-center justify-between font-label-sm text-label-sm mb-1">
+            <span class="text-on-surface-variant">Ciclo actual: <strong class="text-primary font-tabular-data">{{ vehiculo.km_ciclo_actual }} km</strong> de 30.000 km</span>
+            <span class="font-bold font-tabular-data {% if vehiculo.requiere_mantenimiento_preventivo %}text-amber-700{% else %}text-primary{% endif %}">{{ vehiculo.porcentaje_ciclo_mantenimiento }}%</span>
+          </div>
+          <div class="w-full h-3 rounded-full bg-surface-container overflow-hidden border border-outline-variant/30">
+            <div class="h-full rounded-full transition-all duration-500 {% if vehiculo.porcentaje_ciclo_mantenimiento >= 90 %}bg-amber-500{% elif vehiculo.porcentaje_ciclo_mantenimiento >= 75 %}bg-blue-500{% else %}bg-emerald-500{% endif %}" style="width: {{ vehiculo.porcentaje_ciclo_mantenimiento }}%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resumen Próximo Mantenimiento -->
+      <div class="bg-surface-container-low p-4 rounded-xl border border-outline-variant/30 min-w-[240px] text-center md:text-right">
+        <span class="font-label-sm text-label-sm text-on-surface-variant block uppercase tracking-wider">Próximo a los</span>
+        <span class="font-headline-md text-headline-md font-bold text-primary font-tabular-data block">{{ vehiculo.proximo_mantenimiento_km }} km</span>
+        <span class="font-body-sm text-body-sm text-on-surface-variant mt-0.5 block">
+          Faltan <strong class="text-primary font-tabular-data">{{ vehiculo.km_para_proximo_mantenimiento }} km</strong>
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── TARJETAS KPI (RESUMEN OPERATIVO DEL VEHÍCULO) ── -->
+  <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- Total Viajes -->
+    <div class="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-5 shadow-xs">
+      <div class="flex items-center justify-between">
+        <span class="font-label-sm text-label-sm text-on-surface-variant font-medium uppercase tracking-wider">Total Viajes</span>
+        <div class="w-8 h-8 rounded-lg bg-primary/5 text-primary flex items-center justify-center">
+          <span class="material-symbols-outlined text-[20px]">route</span>
+        </div>
+      </div>
+      <p class="font-headline-lg text-headline-lg font-bold text-primary mt-2">{{ total_viajes }}</p>
+      <p class="font-body-sm text-body-sm text-on-surface-variant mt-1">{{ viajes_finalizados }} finalizados · {{ viajes_en_curso }} en curso</p>
+    </div>
+
+    <!-- Kilometraje Total -->
+    <div class="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-5 shadow-xs">
+      <div class="flex items-center justify-between">
+        <span class="font-label-sm text-label-sm text-on-surface-variant font-medium uppercase tracking-wider">Odómetro Actual</span>
+        <div class="w-8 h-8 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center">
+          <span class="material-symbols-outlined text-[20px]">speed</span>
+        </div>
+      </div>
+      <p class="font-headline-lg text-headline-lg font-bold text-primary mt-2 font-tabular-data">{{ vehiculo.kilometraje_actual }} <span class="text-label-md font-normal text-on-surface-variant">km</span></p>
+      <p class="font-body-sm text-body-sm text-on-surface-variant mt-1">{{ total_km }} km acumulados en viajes</p>
+    </div>
+
+    <!-- Combustible Invertido -->
+    <div class="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-5 shadow-xs">
+      <div class="flex items-center justify-between">
+        <span class="font-label-sm text-label-sm text-on-surface-variant font-medium uppercase tracking-wider">Combustible</span>
+        <div class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-700 flex items-center justify-center">
+          <span class="material-symbols-outlined text-[20px]">local_gas_station</span>
+        </div>
+      </div>
+      <p class="font-headline-lg text-headline-lg font-bold text-primary mt-2 font-tabular-data">${{ costo_combustible_total|floatformat:0 }}</p>
+      <p class="font-body-sm text-body-sm text-on-surface-variant mt-1">{{ total_litros|floatformat:1 }} Litros suministrados</p>
+    </div>
+
+    <!-- Mantenimiento Invertido -->
+    <div class="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-5 shadow-xs">
+      <div class="flex items-center justify-between">
+        <span class="font-label-sm text-label-sm text-on-surface-variant font-medium uppercase tracking-wider">Mantenimientos</span>
+        <div class="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-700 flex items-center justify-center">
+          <span class="material-symbols-outlined text-[20px]">build</span>
+        </div>
+      </div>
+      <p class="font-headline-lg text-headline-lg font-bold text-primary mt-2 font-tabular-data">${{ costo_mantenimiento_total|floatformat:0 }}</p>
+      <p class="font-body-sm text-body-sm text-on-surface-variant mt-1">{{ mantenimientos.count }} servicios registrados</p>
+    </div>
+  </section>
+
+  <!-- ── PESTAÑAS INTERACTIVAS (TABS) ── -->
+  <section class="bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-xs overflow-hidden">
+    
+    <!-- Tab Navigation Bar -->
+    <div class="flex items-center border-b border-outline-variant/30 px-6 pt-3 bg-surface-container-low/40 overflow-x-auto gap-2">
+      <button onclick="switchTab('viajes')" id="tab-btn-viajes" class="tab-btn flex items-center gap-2 pb-3 px-3 border-b-2 font-label-md text-label-md font-semibold transition-all border-primary text-primary">
+        <span class="material-symbols-outlined text-[18px]">route</span>
+        <span>Viajes Realizados</span>
+        <span class="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[11px]">{{ viajes.count }}</span>
+      </button>
+
+      <button onclick="switchTab('mantenimientos')" id="tab-btn-mantenimientos" class="tab-btn flex items-center gap-2 pb-3 px-3 border-b-2 font-label-md text-label-md font-semibold transition-all border-transparent text-on-surface-variant hover:text-primary">
+        <span class="material-symbols-outlined text-[18px]">build</span>
+        <span>Mantenimientos</span>
+        <span class="px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant text-[11px]">{{ mantenimientos.count }}</span>
+      </button>
+
+      <button onclick="switchTab('combustible')" id="tab-btn-combustible" class="tab-btn flex items-center gap-2 pb-3 px-3 border-b-2 font-label-md text-label-md font-semibold transition-all border-transparent text-on-surface-variant hover:text-primary">
+        <span class="material-symbols-outlined text-[18px]">local_gas_station</span>
+        <span>Combustible</span>
+        <span class="px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant text-[11px]">{{ cargas_combustible.count }}</span>
+      </button>
+
+      <button onclick="switchTab('incidentes')" id="tab-btn-incidentes" class="tab-btn flex items-center gap-2 pb-3 px-3 border-b-2 font-label-md text-label-md font-semibold transition-all border-transparent text-on-surface-variant hover:text-primary">
+        <span class="material-symbols-outlined text-[18px]">report_problem</span>
+        <span>Incidentes</span>
+        <span class="px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant text-[11px]">{{ incidentes.count }}</span>
+      </button>
+    </div>
+
+    <!-- ── TAB CONTENT 1: VIAJES ── -->
+    <div id="tab-pane-viajes" class="tab-pane p-0">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="border-b border-outline-variant/30 bg-surface-container-low/30 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">
+              <th class="py-3.5 px-6 font-semibold">ID</th>
+              <th class="py-3.5 px-6 font-semibold">Ruta</th>
+              <th class="py-3.5 px-6 font-semibold">Conductor</th>
+              <th class="py-3.5 px-6 font-semibold">Fecha Salida</th>
+              <th class="py-3.5 px-6 font-semibold">Tipo Carga</th>
+              <th class="py-3.5 px-6 font-semibold">Estado</th>
+              <th class="py-3.5 px-6 font-semibold text-right">Acción</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-outline-variant/20 font-body-md text-body-md">
+            {% for v in viajes %}
+            <tr class="hover:bg-surface-container-low/40 transition-colors">
+              <td class="py-3.5 px-6 font-tabular-data font-bold text-primary">#{{ v.id }}</td>
+              <td class="py-3.5 px-6 font-medium text-primary">
+                <div class="flex items-center gap-1.5">
+                  <span>{{ v.ciudad_origen }}</span>
+                  <span class="material-symbols-outlined text-xs text-outline">arrow_forward</span>
+                  <span>{{ v.ciudad_destino }}</span>
+                </div>
+              </td>
+              <td class="py-3.5 px-6 text-on-surface-variant">{{ v.conductor.nombre_completo }}</td>
+              <td class="py-3.5 px-6 font-tabular-data text-on-surface-variant">{{ v.fecha_hora_salida|date:"d/m/Y H:i" }}</td>
+              <td class="py-3.5 px-6 text-on-surface-variant">{{ v.tipo_carga }}</td>
+              <td class="py-3.5 px-6">
+                {% if v.estado == 'Finalizado' %}
+                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-label-sm font-semibold">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> Finalizado
+                </span>
+                {% elif v.estado == 'En curso' %}
+                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-800 border border-blue-200 text-label-sm font-semibold">
+                  <span class="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse"></span> En curso
+                </span>
+                {% else %}
+                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200 text-label-sm font-semibold">
+                  <span class="w-1.5 h-1.5 rounded-full bg-amber-600"></span> Programado
+                </span>
+                {% endif %}
+              </td>
+              <td class="py-3.5 px-6 text-right">
+                <a href="{% url 'viaje_detalle' v.id %}" class="p-1.5 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-lg transition-colors inline-flex items-center" title="Ver viaje">
+                  <span class="material-symbols-outlined text-[18px]">visibility</span>
+                </a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="7" class="py-12 text-center text-on-surface-variant">
+                <span class="material-symbols-outlined text-4xl text-outline-variant block mb-2">route</span>
+                No hay viajes registrados para este vehículo.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── TAB CONTENT 2: MANTENIMIENTOS CON CAMBIO DE ESTADO ── -->
+    <div id="tab-pane-mantenimientos" class="tab-pane p-0 hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="border-b border-outline-variant/30 bg-surface-container-low/30 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">
+              <th class="py-3.5 px-6 font-semibold">ID</th>
+              <th class="py-3.5 px-6 font-semibold">Tipo</th>
+              <th class="py-3.5 px-6 font-semibold">Taller</th>
+              <th class="py-3.5 px-6 font-semibold">Fecha Prog.</th>
+              <th class="py-3.5 px-6 font-semibold">Costo (COP)</th>
+              <th class="py-3.5 px-6 font-semibold">Estado (Modificar)</th>
+              <th class="py-3.5 px-6 font-semibold text-right">Acción</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-outline-variant/20 font-body-md text-body-md">
+            {% for m in mantenimientos %}
+            <tr class="hover:bg-surface-container-low/40 transition-colors">
+              <td class="py-3.5 px-6 font-tabular-data font-bold text-primary">MNT-{{ m.id }}</td>
+              <td class="py-3.5 px-6 font-medium text-primary">{{ m.tipo_mantenimiento }}</td>
+              <td class="py-3.5 px-6 text-on-surface-variant">{{ m.taller_responsable }}</td>
+              <td class="py-3.5 px-6 font-tabular-data text-on-surface-variant">{{ m.fecha_programada|date:"d/m/Y" }}</td>
+              <td class="py-3.5 px-6 font-tabular-data font-bold text-primary">${{ m.costo|floatformat:0 }}</td>
+              
+              <!-- Selector de cambio de estado directo para mantenimiento -->
+              <td class="py-3.5 px-6">
+                <form method="post" action="{% url 'mantenimiento_cambiar_estado' m.id %}" class="inline-flex items-center">
+                  {% csrf_token %}
+                  <select name="estado" onchange="this.form.submit()" class="h-8 px-2 rounded-lg text-label-sm font-semibold border cursor-pointer transition-colors {% if m.estado == 'Finalizado' %}bg-emerald-50 border-emerald-300 text-emerald-800{% elif m.estado == 'En Proceso' %}bg-blue-50 border-blue-300 text-blue-800{% else %}bg-amber-50 border-amber-300 text-amber-800{% endif %}" title="Clic para cambiar estado del mantenimiento">
+                    <option value="Programado" {% if m.estado == 'Programado' %}selected{% endif %}>Programado</option>
+                    <option value="En Proceso" {% if m.estado == 'En Proceso' %}selected{% endif %}>En Proceso</option>
+                    <option value="Finalizado" {% if m.estado == 'Finalizado' %}selected{% endif %}>Finalizado</option>
+                  </select>
+                </form>
+              </td>
+
+              <td class="py-3.5 px-6 text-right">
+                <a href="{% url 'mantenimiento_detalle' m.id %}" class="p-1.5 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-lg transition-colors inline-flex items-center" title="Ver mantenimiento completo">
+                  <span class="material-symbols-outlined text-[18px]">visibility</span>
+                </a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="7" class="py-12 text-center text-on-surface-variant">
+                <span class="material-symbols-outlined text-4xl text-outline-variant block mb-2">build</span>
+                No hay mantenimientos registrados para este vehículo.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── TAB CONTENT 3: COMBUSTIBLE ── -->
+    <div id="tab-pane-combustible" class="tab-pane p-0 hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="border-b border-outline-variant/30 bg-surface-container-low/30 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">
+              <th class="py-3.5 px-6 font-semibold">ID</th>
+              <th class="py-3.5 px-6 font-semibold">Fecha</th>
+              <th class="py-3.5 px-6 font-semibold">Ciudad</th>
+              <th class="py-3.5 px-6 font-semibold">Conductor</th>
+              <th class="py-3.5 px-6 font-semibold">Litros</th>
+              <th class="py-3.5 px-6 font-semibold">Total (COP)</th>
+              <th class="py-3.5 px-6 font-semibold">Estado</th>
+              <th class="py-3.5 px-6 font-semibold text-right">Acción</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-outline-variant/20 font-body-md text-body-md">
+            {% for c in cargas_combustible %}
+            <tr class="hover:bg-surface-container-low/40 transition-colors">
+              <td class="py-3.5 px-6 font-tabular-data font-bold text-primary">#{{ c.id }}</td>
+              <td class="py-3.5 px-6 font-tabular-data text-on-surface-variant">{{ c.fecha_carga|date:"d/m/Y" }}</td>
+              <td class="py-3.5 px-6 font-medium text-primary">{{ c.ciudad }}</td>
+              <td class="py-3.5 px-6 text-on-surface-variant">{{ c.conductor.nombre_completo }}</td>
+              <td class="py-3.5 px-6 font-tabular-data text-primary">{{ c.litros_cargados }} L</td>
+              <td class="py-3.5 px-6 font-tabular-data font-bold text-primary">${{ c.costo_total|floatformat:0 }}</td>
+              <td class="py-3.5 px-6">
+                {% if c.estado == 'Aprobado' %}
+                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-label-sm font-semibold">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> Aprobado
+                </span>
+                {% elif c.estado == 'Rechazado' %}
+                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-800 border border-rose-200 text-label-sm font-semibold">
+                  <span class="w-1.5 h-1.5 rounded-full bg-rose-600"></span> Rechazado
+                </span>
+                {% else %}
+                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200 text-label-sm font-semibold">
+                  <span class="w-1.5 h-1.5 rounded-full bg-amber-600"></span> Pendiente
+                </span>
+                {% endif %}
+              </td>
+              <td class="py-3.5 px-6 text-right">
+                <a href="{% url 'combustible_detalle' c.id %}" class="p-1.5 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-lg transition-colors inline-flex items-center" title="Ver carga de combustible">
+                  <span class="material-symbols-outlined text-[18px]">visibility</span>
+                </a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="8" class="py-12 text-center text-on-surface-variant">
+                <span class="material-symbols-outlined text-4xl text-outline-variant block mb-2">local_gas_station</span>
+                No hay cargas de combustible registradas para este vehículo.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── TAB CONTENT 4: INCIDENTES ── -->
+    <div id="tab-pane-incidentes" class="tab-pane p-0 hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="border-b border-outline-variant/30 bg-surface-container-low/30 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">
+              <th class="py-3.5 px-6 font-semibold">ID</th>
+              <th class="py-3.5 px-6 font-semibold">Tipo</th>
+              <th class="py-3.5 px-6 font-semibold">Lugar</th>
+              <th class="py-3.5 px-6 font-semibold">Fecha</th>
+              <th class="py-3.5 px-6 font-semibold">Conductor</th>
+              <th class="py-3.5 px-6 font-semibold">Estado</th>
+              <th class="py-3.5 px-6 font-semibold text-right">Acción</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-outline-variant/20 font-body-md text-body-md">
+            {% for inc in incidentes %}
+            <tr class="hover:bg-surface-container-low/40 transition-colors">
+              <td class="py-3.5 px-6 font-tabular-data font-bold text-primary">INC-{{ inc.id|stringformat:"04d" }}</td>
+              <td class="py-3.5 px-6 font-medium text-primary">{{ inc.tipo_incidente }}</td>
+              <td class="py-3.5 px-6 text-on-surface-variant">{{ inc.lugar }}</td>
+              <td class="py-3.5 px-6 font-tabular-data text-on-surface-variant">{{ inc.fecha_incidente|date:"d/m/Y H:i" }}</td>
+              <td class="py-3.5 px-6 text-on-surface-variant">{{ inc.viaje.conductor.nombre_completo }}</td>
+              <td class="py-3.5 px-6">
+                {% if inc.estado == 'Resuelto' %}
+                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-label-sm font-semibold">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> Resuelto
+                </span>
+                {% elif inc.estado == 'En Revisión' %}
+                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-800 border border-blue-200 text-label-sm font-semibold">
+                  <span class="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse"></span> En Revisión
+                </span>
+                {% elif inc.estado == 'Rechazado' %}
+                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-800 border border-rose-200 text-label-sm font-semibold">
+                  <span class="w-1.5 h-1.5 rounded-full bg-rose-600"></span> Rechazado
+                </span>
+                {% else %}
+                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200 text-label-sm font-semibold">
+                  <span class="w-1.5 h-1.5 rounded-full bg-amber-600"></span> Reportado
+                </span>
+                {% endif %}
+              </td>
+              <td class="py-3.5 px-6 text-right">
+                <a href="{% url 'incidentes_admin' %}?q={{ inc.id }}" class="p-1.5 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-lg transition-colors inline-flex items-center" title="Ver en gestión de incidentes">
+                  <span class="material-symbols-outlined text-[18px]">visibility</span>
+                </a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="7" class="py-12 text-center text-on-surface-variant">
+                <span class="material-symbols-outlined text-4xl text-outline-variant block mb-2">check_circle</span>
+                No se han reportado incidentes para este vehículo.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </section>
+
+</div>
+
+<script>
+function switchTab(tabId) {
+  // Hide all tab panes
+  document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
+  // Deactivate all tab buttons
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.classList.remove('border-primary', 'text-primary');
+    btn.classList.add('border-transparent', 'text-on-surface-variant');
+  });
+
+  // Show selected pane
+  const activePane = document.getElementById('tab-pane-' + tabId);
+  if (activePane) activePane.classList.remove('hidden');
+
+  // Activate selected button
+  const activeBtn = document.getElementById('tab-btn-' + tabId);
+  if (activeBtn) {
+    activeBtn.classList.add('border-primary', 'text-primary');
+    activeBtn.classList.remove('border-transparent', 'text-on-surface-variant');
+  }
+}
+</script>
+{% endblock %}
